@@ -1,0 +1,50 @@
+@use "../abstracts/variables" as vars;
+@use "../abstracts/mixins" as mix;
+
+.console-output {
+  background: vars.$matrix-black;
+  height: 600px;
+  @include mix.pixel-border(vars.$matrix-green, 2px);
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: vars.$spacing-sm;
+    margin-bottom: vars.$spacing-md;
+    border-bottom: 1px solid rgba(vars.$matrix-green, 0.3);
+    padding-bottom: vars.$spacing-sm;
+  }
+
+  &__title {
+    color: vars.$matrix-green;
+    font-family: vars.$font-matrix;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  &__scroll-area {
+    height: 520px;
+  }
+
+  &__line {
+    font-family: monospace;
+    font-size: 13px;
+    margin-bottom: 4px;
+
+    &--error {
+      color: vars.$matrix-red;
+    }
+    &--success {
+      color: vars.$matrix-green-bright;
+    }
+    &--warning {
+      color: vars.$matrix-yellow;
+    }
+    &--info {
+      color: vars.$matrix-cyan;
+    }
+    &--default {
+      color: vars.$matrix-green;
+    }
+  }
+}

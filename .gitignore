@@ -1,0 +1,79 @@
+# Quality Gate Reports
+quality-gate-reports/
+backend/data/*.db
+backend/reports/
+
+# Backup files
+*.backup
+*.bak
+quality-gate-universal.sh.backup
+quality-gate-index.html.backup
+README.md.backup
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+env.bak/
+venv.bak/
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.next/
+out/
+dist/
+.cache/
+.parcel-cache
+
+# Environment variables
+.env
+.env.local
+.env*.local
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Temporary files
+*.log
+*.tmp
+report-data.json
+.quality_gate_*
+/tmp/
+
+# Docker
+.dockerignore
+frontend/playwright-report/

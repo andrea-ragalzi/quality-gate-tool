@@ -1,0 +1,100 @@
+@use "../abstracts/variables" as vars;
+@use "../abstracts/mixins" as mix;
+
+.app-shell {
+  &__main {
+    background: vars.$matrix-black;
+    min-height: 100vh;
+    // padding: 0; // Removed to allow Mantine to handle structural padding
+    // position: relative; // Removed to let Mantine handle layout
+    // overflow: hidden;
+    // z-index: 1; // Removed
+  }
+
+  &__aside {
+    background: rgba(vars.$matrix-black, 0.95);
+    border-left: 2px solid vars.$matrix-green;
+    // position: relative; // Removed to let Mantine handle layout
+    // z-index: 10; // Removed
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+          rgba(18, 16, 16, 0) 50%,
+          rgba(0, 0, 0, 0.25) 50%
+        ),
+        linear-gradient(
+          90deg,
+          rgba(255, 0, 0, 0.06),
+          rgba(0, 255, 0, 0.02),
+          rgba(0, 0, 255, 0.06)
+        );
+      background-size:
+        100% 2px,
+        3px 100%;
+      pointer-events: none;
+    }
+  }
+}
+
+.dashboard {
+  &__title {
+    color: vars.$matrix-green;
+    font-family: vars.$font-matrix;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: vars.$spacing-xl;
+    text-align: center;
+
+    @include mix.text-glow(vars.$matrix-green, 10px);
+  }
+
+  &__grid {
+    padding: vars.$spacing-xl;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+
+  &__status-box {
+    background: rgba(0, 0, 0, 0.8);
+    border: 2px solid #b8860b; // Gold/Amber for status
+    padding: vars.$spacing-md;
+    border-radius: 4px;
+    margin-bottom: vars.$spacing-md;
+
+    &--text {
+      color: #b8860b;
+      font-weight: 700;
+      text-transform: uppercase;
+      text-align: center;
+      font-family: vars.$font-matrix;
+    }
+  }
+
+  &__controls {
+    margin-top: auto;
+  }
+
+  &__panel-title {
+    color: vars.$matrix-green;
+    font-family: vars.$font-matrix;
+    font-weight: 900;
+    font-size: 1.2rem;
+  }
+
+  &__panel-text {
+    color: vars.$matrix-green;
+    font-family: vars.$font-matrix;
+    font-size: 0.85rem;
+  }
+
+  &__input {
+    font-family: monospace;
+    font-size: 0.85rem;
+  }
+}

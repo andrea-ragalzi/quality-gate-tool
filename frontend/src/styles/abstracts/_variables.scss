@@ -1,0 +1,39 @@
+// Matrix Theme Variables
+$matrix-green: #00ff41;
+$matrix-green-dark: #008f11;
+$matrix-green-bright: #4dff88;
+$matrix-black: #0d0208;
+$matrix-dark: #1a1a1d;
+$matrix-red: #ff3131;
+$matrix-yellow: #ffff00;
+$matrix-cyan: #00ffff;
+
+// CRT Effects
+$scanline-opacity: 0.15;
+$scanline-width: 2px;
+$flicker-speed: 0.01s;
+$glow-intensity: 20px;
+
+// Animations
+$pulse-duration: 2s;
+$rotate-duration: 3s;
+$glitch-duration: 0.3s;
+
+// Typography
+$font-matrix: "IBM Plex Mono", "Courier New", monospace;
+$font-size-base: 14px;
+$font-size-title: 3.5rem;
+$font-size-subtitle: 1.2rem;
+
+// Spacing
+$spacing-xs: 0.25rem;
+$spacing-sm: 0.5rem;
+$spacing-md: 1rem;
+$spacing-lg: 2rem;
+$spacing-xl: 4rem;
+
+// Z-index layers
+$z-scanlines: 9999;
+$z-matrix-rain: 1;
+$z-modal: 1000;
+$z-glitch: 100;

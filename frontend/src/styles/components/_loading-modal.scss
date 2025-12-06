@@ -1,0 +1,31 @@
+@use "../abstracts/variables" as vars;
+
+.loading-modal {
+  &__content {
+    background: vars.$matrix-black;
+    border: 2px solid vars.$matrix-green;
+    box-shadow: 0 0 20px rgba(vars.$matrix-green, 0.3);
+  }
+
+  &__header {
+    background: vars.$matrix-black;
+    border-bottom: 1px solid vars.$matrix-green;
+  }
+
+  &__body {
+    padding: 2rem;
+  }
+
+  &__title {
+    color: vars.$matrix-green;
+    font-family: vars.$font-matrix;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  &__message {
+    color: vars.$matrix-green;
+    font-family: monospace;
+    opacity: 0.8;
+  }
+}

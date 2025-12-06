@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: quality-gate-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - /var/run/docker.sock:/var/run/docker.sock  # For container management if needed
+      - quality-gate-db:/app/data
+      - quality-gate-reports:/app/reports
+      # Mount user's home directory to allow browsing and selecting workspace
+      - $HOME:/home
+    environment:
+      - PROJECTS_ROOT=/home/Workspace
+      - PYTHONUNBUFFERED=1
+      - DATABASE_URL=sqlite:///./data/quality_gate.db
+      - CORS_ORIGINS=http://localhost:5173,http://localhost:3000
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - quality-gate-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: quality-gate-frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules  # Use container's node_modules
+    environment:
+      - VITE_API_URL=http://localhost:8000
+      - VITE_WS_URL=ws://localhost:8000
+    networks:
+      - quality-gate-network
+    depends_on:
+      - backend
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+networks:
+  quality-gate-network:
+    driver: bridge
+
+volumes:
+  quality-gate-db:
+    driver: local
+  quality-gate-reports:
+    driver: local

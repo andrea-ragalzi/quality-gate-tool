@@ -1,0 +1,44 @@
+@use "../abstracts/variables" as vars;
+@use "../abstracts/mixins" as mix;
+
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: vars.$spacing-sm;
+
+  &::before {
+    content: "";
+    display: block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  &.status-pass::before {
+    background: vars.$matrix-green;
+    @include mix.box-glow(vars.$matrix-green, 8px);
+  }
+
+  &.status-fail::before {
+    background: vars.$matrix-red;
+    @include mix.box-glow(vars.$matrix-red, 8px);
+  }
+
+  &.status-pending::before {
+    background: vars.$matrix-yellow;
+    @include mix.box-glow(vars.$matrix-yellow, 8px);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.2);
+  }
+}

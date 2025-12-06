@@ -1,0 +1,64 @@
+@use "../abstracts/variables" as vars;
+@use "../abstracts/mixins" as mix;
+
+.log-modal {
+  &__overlay {
+    backdrop-filter: blur(4px);
+    background: rgba(0, 0, 0, 0.7);
+  }
+
+  &__content {
+    background: vars.$matrix-black;
+    border: 1px solid vars.$matrix-green;
+    box-shadow: 0 0 20px rgba(vars.$matrix-green, 0.2);
+
+    @include mix.crt-screen;
+  }
+
+  &__header {
+    border-bottom: 1px solid rgba(vars.$matrix-green, 0.3);
+    padding: vars.$spacing-md;
+    background: rgba(vars.$matrix-green, 0.05);
+  }
+
+  &__title {
+    color: vars.$matrix-green;
+    font-family: vars.$font-matrix;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+
+    &.glitch {
+      @include mix.glitch-text;
+    }
+  }
+
+  &__body {
+    padding: 0;
+  }
+
+  &__pre {
+    background: #000;
+    padding: vars.$spacing-md;
+    color: vars.$matrix-green-bright;
+    font-family: monospace;
+    font-size: 12px;
+    white-space: pre-wrap;
+    border: 1px solid rgba(vars.$matrix-green, 0.2);
+    margin: vars.$spacing-md;
+    border-radius: 4px;
+    min-height: 300px;
+
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: #000;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: vars.$matrix-green-dark;
+      border-radius: 4px;
+    }
+  }
+}

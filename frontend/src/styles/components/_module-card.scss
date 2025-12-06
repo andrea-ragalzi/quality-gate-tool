@@ -1,0 +1,235 @@
+@use "../abstracts/variables" as vars;
+@use "../abstracts/mixins" as mix;
+
+.module-card {
+  background: rgba(vars.$matrix-black, 0.8);
+  border: 1px solid rgba(vars.$matrix-green, 0.3);
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+
+  &:hover {
+    border-color: vars.$matrix-green;
+    box-shadow: 0 0 15px rgba(vars.$matrix-green, 0.2);
+    transform: translateY(-2px);
+  }
+
+  &__content {
+    padding: vars.$spacing-md;
+    flex: 1;
+  }
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: vars.$spacing-sm;
+  }
+
+  &__icon {
+    color: vars.$matrix-green;
+    filter: drop-shadow(0 0 5px rgba(vars.$matrix-green, 0.5));
+    width: 24px;
+    height: 24px;
+  }
+
+  &__title {
+    color: vars.$matrix-green-bright;
+    font-family: vars.$font-matrix;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 1.1rem;
+    font-weight: 700;
+  }
+
+  &__subtitle {
+    color: vars.$matrix-green-dark;
+    font-family: vars.$font-matrix;
+    font-size: 0.85rem;
+  }
+
+  &__status {
+    font-family: vars.$font-matrix;
+    font-weight: bold;
+    text-transform: uppercase;
+    white-space: nowrap;
+    font-size: 0.9rem;
+
+    &--pass {
+      color: vars.$matrix-green-bright;
+      @include mix.text-glow(vars.$matrix-green-bright, 5px);
+    }
+
+    &--fail {
+      color: vars.$matrix-red;
+      @include mix.text-glow(vars.$matrix-red, 5px);
+    }
+
+    &--running {
+      color: vars.$matrix-yellow;
+      animation: pulse 1.5s infinite;
+    }
+
+    &--pending {
+      color: vars.$matrix-dark;
+    }
+  }
+
+  &__details {
+    margin-top: vars.$spacing-md;
+  }
+
+  &__summary-toggle {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    color: vars.$matrix-green;
+    opacity: 0.7;
+    font-size: 0.9rem;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+
+  &__logs-container {
+    margin-top: vars.$spacing-sm;
+    padding: vars.$spacing-sm;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(vars.$matrix-green, 0.2);
+    border-radius: 4px;
+  }
+
+  &__summary-text {
+    color: vars.$matrix-green;
+    font-family: monospace;
+    opacity: 0.8;
+    font-size: 0.9rem;
+    margin-bottom: vars.$spacing-xs;
+  }
+
+  &__logs-pre {
+    font-size: 11px;
+    font-family: monospace;
+    color: vars.$matrix-green;
+    margin: 0;
+    padding: vars.$spacing-sm;
+    background: #000;
+    border-radius: 4px;
+    max-height: 140px;
+    overflow: auto;
+    white-space: pre-wrap;
+  }
+
+  &__view-btn {
+    margin-top: vars.$spacing-xs;
+    color: vars.$matrix-green;
+    font-family: vars.$font-matrix;
+
+    &:hover {
+      background: rgba(vars.$matrix-green, 0.1);
+    }
+  }
+
+  &__progress-bar {
+    height: 2px;
+    background: vars.$matrix-green;
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    animation: scan 2s linear infinite;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes scan {
+  0% {
+    width: 0%;
+    opacity: 0;
+  }
+  50% {
+    width: 100%;
+    opacity: 1;
+  }
+  100% {
+    width: 0%;
+    opacity: 0;
+  }
+}
+
+.pending-text {
+  @include mix.text-glow(vars.$matrix-green, 15px);
+  animation: pending-glow 1.5s ease-in-out infinite;
+}
+
+.pending-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  width: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    vars.$matrix-green 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: pending-progress 2s linear infinite;
+  @include mix.box-glow(vars.$matrix-green, 10px);
+}
+
+@keyframes pending-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes pending-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pending-glow {
+  0%,
+  100% {
+    text-shadow: 0 0 10px vars.$matrix-green;
+  }
+  50% {
+    text-shadow: 0 0 30px vars.$matrix-green;
+  }
+}
+
+@keyframes pending-progress {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}

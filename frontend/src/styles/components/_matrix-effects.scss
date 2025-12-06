@@ -1,0 +1,189 @@
+@use "../abstracts/variables" as vars;
+@use "../abstracts/mixins" as mix;
+
+// Matrix Rain Animation - Ultra Enhanced
+.matrix-rain-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: vars.$z-matrix-rain;
+  opacity: 0.8;
+}
+
+.matrix-char {
+  position: absolute;
+  font-family: vars.$font-matrix;
+  font-size: 16px;
+  font-weight: bold;
+  color: vars.$matrix-green;
+  @include mix.text-glow(vars.$matrix-green, 8px);
+  opacity: 0;
+  animation: matrix-fall linear infinite;
+
+  &.bright {
+    color: vars.$matrix-green-bright;
+    @include mix.text-glow(vars.$matrix-green-bright, 12px);
+  }
+
+  &.dim {
+    color: vars.$matrix-green-dark;
+    opacity: 0.4;
+  }
+}
+
+@keyframes matrix-fall {
+  0% {
+    top: -50px;
+    opacity: 0;
+    transform: scaleY(0);
+  }
+  5% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+  90% {
+    opacity: 0.6;
+  }
+  100% {
+    top: 110%;
+    opacity: 0;
+    transform: scaleY(0.5);
+  }
+}
+
+// Background Matrix Grid
+.matrix-grid {
+  background-image: linear-gradient(
+      rgba(vars.$matrix-green, 0.03) 1px,
+      transparent 1px
+    ),
+    linear-gradient(90deg, rgba(vars.$matrix-green, 0.03) 1px, transparent 1px);
+  background-size: 20px 20px;
+  animation: grid-move 20s linear infinite;
+}
+
+@keyframes grid-move {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 20px 20px;
+  }
+}
+
+// Digital Rain Terminal Lines
+.terminal-line {
+  display: block;
+  opacity: 0;
+  animation: terminal-appear 0.1s forwards;
+
+  &::before {
+    content: ">";
+    color: vars.$matrix-green;
+    margin-right: vars.$spacing-sm;
+    @include mix.text-glow(vars.$matrix-green, 5px);
+  }
+}
+
+@keyframes terminal-appear {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+// Binary Background
+.binary-bg {
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(vars.$matrix-green, 0.03) 2px,
+      rgba(vars.$matrix-green, 0.03) 4px
+    );
+    font-family: vars.$font-matrix;
+    font-size: 10px;
+    color: rgba(vars.$matrix-green, 0.1);
+    overflow: hidden;
+    animation: binary-scroll 10s linear infinite;
+    pointer-events: none;
+  }
+}
+
+@keyframes binary-scroll {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(100px);
+  }
+}
+
+// Scanline overlay (optional per-element)
+.scanlines {
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(vars.$matrix-black, 0.1) 0px,
+      transparent 1px,
+      transparent 2px
+    );
+    pointer-events: none;
+    animation: scanline-move 8s linear infinite;
+  }
+}
+
+@keyframes scanline-move {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+// Terminal boot animation
+.terminal-boot {
+  animation: terminal-boot-sequence 2s ease-out;
+}
+
+@keyframes terminal-boot-sequence {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+    filter: blur(10px);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
+  }
+}

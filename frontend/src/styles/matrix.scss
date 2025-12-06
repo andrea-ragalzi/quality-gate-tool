@@ -1,0 +1,82 @@
+// Matrix Retro Theme - Main SCSS
+// Import order matters!
+
+// 1. Abstracts
+@use "./abstracts/variables" as vars;
+@use "./abstracts/mixins" as mix;
+@use "./abstracts/utilities";
+
+// 2. Base
+@use "./base/mantine-overrides";
+
+// 3. Components
+@use "./components/matrix-effects";
+@use "./components/matrix-intro";
+@use "./components/matrix-rain";
+@use "./components/loading-modal";
+@use "./components/module-card";
+@use "./components/status-indicator";
+@use "./components/console-output";
+@use "./components/tool-card";
+@use "./components/file-system";
+
+// 4. Layout
+@use "./layout/grid";
+@use "./layout/app-shell";
+
+// 5. Global Styles
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    font-size: vars.$font-size-base;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: vars.$matrix-black;
+    color: vars.$matrix-green;
+    font-family: vars.$font-matrix;
+    overflow-x: hidden;
+    @include mix.crt-screen;
+
+    // Cursor Matrix style
+    cursor:
+      url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><rect width="16" height="16" fill="%2300ff41"/></svg>')
+        8 8,
+      auto;
+  }
+
+  ::selection {
+    background: rgba(vars.$matrix-green, 0.3);
+    color: vars.$matrix-green-bright;
+    @include mix.text-glow(vars.$matrix-green-bright, 5px);
+  }
+
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: vars.$matrix-black;
+    border: 1px solid rgba(vars.$matrix-green, 0.2);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(
+      180deg,
+      vars.$matrix-green-dark,
+      vars.$matrix-green
+    );
+    @include mix.box-glow(vars.$matrix-green, 5px);
+
+    &:hover {
+      background: vars.$matrix-green;
+    }
+  }
+}

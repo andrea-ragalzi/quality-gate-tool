@@ -1,0 +1,38 @@
+@use "./variables" as vars;
+@use "./mixins" as mix;
+
+.crt {
+  @include mix.crt-screen;
+}
+
+.text-matrix {
+  @include mix.text-glow(vars.$matrix-green, 10px);
+}
+
+.text-matrix-fail {
+  @include mix.text-glow(vars.$matrix-red, 10px);
+}
+
+.text-matrix-warn {
+  @include mix.text-glow(vars.$matrix-yellow, 10px);
+}
+
+.box-matrix {
+  @include mix.box-glow(vars.$matrix-green, 20px);
+}
+
+.box-matrix-fail {
+  @include mix.box-glow(vars.$matrix-red, 20px);
+}
+
+.glitch {
+  @include mix.glitch-text;
+}
+
+.hologram {
+  @include mix.hologram;
+}
+
+.pixel-border {
+  @include mix.pixel-border(vars.$matrix-green, 2px);
+}

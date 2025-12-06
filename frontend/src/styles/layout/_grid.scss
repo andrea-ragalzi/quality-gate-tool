@@ -1,0 +1,26 @@
+@use "../abstracts/variables" as vars;
+
+.dashboard__grid {
+  padding: vars.$spacing-xl;
+  width: 100%;
+  min-height: 100%;
+  position: relative;
+}
+
+// Layout per moduli - Full width responsive
+.modules-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  width: 100%;
+
+  // Tablet: 2 colonne
+  @media (min-width: 768px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  // Desktop: 4 colonne
+  @media (min-width: 1400px) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
