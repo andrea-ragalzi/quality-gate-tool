@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@mantine/core";
-import { IconLoader, IconCheck, IconX } from "@tabler/icons-react";
+import { IconLoader, IconCheck, IconX, IconCopy } from "@tabler/icons-react";
 
 interface ModuleCardProps {
   moduleId: string;
@@ -132,6 +132,19 @@ export default function ModuleCard({
           <details className="module-card__details">
             <summary className="module-card__summary-toggle">
               <span>☐ Show Output Details</span>
+              <Button
+                size="compact-xs"
+                variant="subtle"
+                leftSection={<IconCopy size={14} />}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  navigator.clipboard.writeText(logs.join("\n"));
+                }}
+                style={{ marginLeft: "1rem" }}
+              >
+                Copy
+              </Button>
             </summary>
             <div className="module-card__logs-container">
               {summary && (
