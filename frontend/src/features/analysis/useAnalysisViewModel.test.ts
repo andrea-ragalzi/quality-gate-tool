@@ -45,7 +45,7 @@ describe("useAnalysisViewModel", () => {
       onMessage({ type: "GLOBAL_END", status: "PASS" });
     });
     expect(result.current.isAnalyzing).toBe(false);
-    expect(result.current.overallStatus).toBe("PASS");
+    expect(result.current.overallStatus).toBe("SUCCESS");
   });
 
   it("should aggregate logs correctly (Aggregation Bug Prevention)", () => {
@@ -129,7 +129,7 @@ describe("useAnalysisViewModel", () => {
     });
 
     expect(result.current.isAnalyzing).toBe(false);
-    expect(result.current.overallStatus).toBe("PASS");
+    expect(result.current.overallStatus).toBe("SUCCESS");
   });
 
   it("should handle start analysis", async () => {
