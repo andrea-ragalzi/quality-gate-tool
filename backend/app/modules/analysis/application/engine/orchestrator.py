@@ -83,10 +83,8 @@ class AnalysisOrchestrator:
         """
         # Define 8 core modules (static analysis only)
         all_module_configs = [
-            # Frontend modules
             {"id": "F_TypeScript", "name": "TypeScript Type Check"},
             {"id": "F_ESLint", "name": "ESLint Quality"},
-            # Backend modules
             {"id": "B_Ruff", "name": "Ruff Lint & Format"},
             {"id": "B_Pyright", "name": "Pyright Strict Types"},
             {"id": "B_Lizard", "name": "Lizard Complexity"},
