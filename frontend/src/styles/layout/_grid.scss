@@ -5,22 +5,24 @@
   width: 100%;
   min-height: 100%;
   position: relative;
+
+  @media (max-width: 768px) {
+    padding: vars.$spacing-md;
+  }
 }
 
-// Layout per moduli - Full width responsive
-.modules-row {
-  display: grid;
-  grid-template-columns: 1fr;
+// Layout per moduli - JS-driven Masonry
+.modules-grid {
+  display: flex;
   gap: 1.5rem;
   width: 100%;
+  align-items: start;
+}
 
-  // Tablet: 2 colonne
-  @media (min-width: 768px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  // Desktop: 4 colonne
-  @media (min-width: 1400px) {
-    grid-template-columns: repeat(4, 1fr);
-  }
+.modules-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  min-width: 0; // Prevent flex items from overflowing
 }
