@@ -3,7 +3,6 @@ export interface ModuleConfig {
   title: string;
   subtitle: string;
   icon: string;
-  role: "frontend" | "backend";
 }
 
 export interface ModuleLog {
