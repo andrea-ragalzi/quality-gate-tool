@@ -2,7 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@mantine/core";
-import { IconLoader, IconCheck, IconX, IconCopy } from "@tabler/icons-react";
+import {
+  IconLoader,
+  IconCheck,
+  IconX,
+  IconCopy,
+  IconChevronDown,
+} from "@tabler/icons-react";
 
 interface ModuleCardProps {
   moduleId: string;
@@ -27,6 +33,7 @@ export default function ModuleCard({
 }: ModuleCardProps) {
   const rainContainerRef = useRef<HTMLDivElement>(null);
   const [showMatrixRain, setShowMatrixRain] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   // Matrix Rain Effect - ONLY when RUNNING
   useEffect(() => {
@@ -104,19 +111,26 @@ export default function ModuleCard({
     }
   };
 
+  const hasContent = summary || logs.length > 0;
+
   return (
-    <div className={`module-card module-card--${status.toLowerCase()}`}>
-      <div className="module-card__content">
-        <div className="module-card__header">
-          <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
-            {getStatusIcon()}
-            <div>
-              <div className="module-card__title">{title}</div>
-              {subtitle && (
-                <div className="module-card__subtitle">{subtitle}</div>
-              )}
-            </div>
+    <div
+      className={`module-card module-card--${status.toLowerCase()} ${
+        isExpanded ? "module-card--expanded" : ""
+      } ${hasContent ? "module-card--clickable" : ""}`}
+      onClick={() => hasContent && setIsExpanded(!isExpanded)}
+    >
+      <div className="module-card__header">
+        <div className="module-card__header-left">
+          {getStatusIcon()}
+          <div className="module-card__header-info">
+            <div className="module-card__title">{title}</div>
+            {subtitle && (
+              <div className="module-card__subtitle">{subtitle}</div>
+            )}
           </div>
+        </div>
+        <div className="module-card__header-right">
           <div
             className={`module-card__status module-card__status--${status.toLowerCase()}`}
           >
@@ -126,60 +140,66 @@ export default function ModuleCard({
                 ? "FAILED"
                 : status}
           </div>
+          {summary && (
+            <div className="module-card__issue-count">
+              {summary.replace(/^[❌✅⚠️]\s*/u, "")}
+            </div>
+          )}
+          {hasContent && (
+            <IconChevronDown
+              size={20}
+              className={`module-card__chevron ${
+                isExpanded ? "module-card__chevron--expanded" : ""
+              }`}
+            />
+          )}
         </div>
+      </div>
 
-        {(summary || logs.length > 0) && (
-          <details className="module-card__details">
-            <summary className="module-card__summary-toggle">
-              <span>☐ Show Output Details</span>
-              <Button
-                size="compact-xs"
-                variant="subtle"
-                leftSection={<IconCopy size={14} />}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  navigator.clipboard.writeText(logs.join("\n"));
-                }}
-                style={{ marginLeft: "1rem" }}
-              >
-                Copy
-              </Button>
-            </summary>
-            <div className="module-card__logs-container">
-              {summary && (
-                <div className="module-card__summary-text">{summary}</div>
-              )}
+      {hasContent && (
+        <>
+          {isExpanded && (
+            <div
+              className="module-card__expanded-content"
+              onClick={(e) => e.stopPropagation()}
+            >
               {logs.length > 0 && (
                 <>
-                  <div
-                    style={{
-                      color: "#666",
-                      fontSize: "0.75rem",
-                      textTransform: "uppercase",
-                      marginBottom: "0.5rem",
-                    }}
-                  >
-                    Recent Logs:
-                  </div>
                   <pre className="module-card__logs-pre">
                     {logs.slice(-5).join("\n")}
                   </pre>
-                  <Button
-                    size="xs"
-                    variant="subtle"
-                    onClick={onViewLog}
-                    fullWidth
-                    className="module-card__view-btn"
-                  >
-                    View Full Log →
-                  </Button>
+                  <div className="module-card__actions">
+                    <Button
+                      size="xs"
+                      variant="subtle"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onViewLog();
+                      }}
+                      className="module-card__view-btn"
+                    >
+                      View Full Log →
+                    </Button>
+                    <Button
+                      size="xs"
+                      variant="subtle"
+                      className="module-card__copy-btn"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        navigator.clipboard.writeText(logs.join("\n"));
+                      }}
+                      title="Copy Logs"
+                    >
+                      <IconCopy size={16} />
+                    </Button>
+                  </div>
                 </>
               )}
             </div>
-          </details>
-        )}
-      </div>
+          )}
+        </>
+      )}
 
       {(status === "RUNNING" || status === "PENDING") && (
         <div className="module-card__progress-bar" />
