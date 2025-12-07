@@ -1,6 +1,7 @@
 "use client";
 
-import { Modal, Text, ScrollArea } from "@mantine/core";
+import { Modal, Text, ScrollArea, Button, Group } from "@mantine/core";
+import { IconCopy } from "@tabler/icons-react";
 
 interface LogModalProps {
   opened: boolean;
@@ -15,19 +16,33 @@ export default function LogModal({
   title,
   logContent,
 }: LogModalProps) {
+  const handleCopy = () => {
+    navigator.clipboard.writeText(logContent);
+  };
+
   return (
     <Modal
       opened={opened}
       onClose={onClose}
       title={
-        <Text
-          className="log-modal__title glitch"
-          size="xl"
-          fw={900}
-          data-text={title}
-        >
-          {title}
-        </Text>
+        <Group>
+          <Text
+            className="log-modal__title glitch"
+            size="xl"
+            fw={900}
+            data-text={title}
+          >
+            {title}
+          </Text>
+          <Button
+            onClick={handleCopy}
+            leftSection={<IconCopy size={16} />}
+            variant="subtle"
+            size="xs"
+          >
+            Copy
+          </Button>
+        </Group>
       }
       size="xl"
       centered
