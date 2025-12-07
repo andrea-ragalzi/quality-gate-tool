@@ -20,6 +20,7 @@ services:
       - PYTHONUNBUFFERED=1
       - DATABASE_URL=sqlite:///./data/quality_gate.db
       - CORS_ORIGINS=http://localhost:5173,http://localhost:3000
+    mem_limit: 512m
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     networks:
       - quality-gate-network
@@ -44,6 +45,8 @@ services:
     environment:
       - VITE_API_URL=http://localhost:8000
       - VITE_WS_URL=ws://localhost:8000
+      - NODE_OPTIONS=--max-old-space-size=1024
+    mem_limit: 1536m
     networks:
       - quality-gate-network
     depends_on:

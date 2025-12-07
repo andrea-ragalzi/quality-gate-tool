@@ -3,5 +3,15 @@
     "id": "quality-gate-test-project",
     "name": "quality-gate-test-project",
     "path": "/home/Workspace/quality-gate-test-project"
+  },
+  {
+    "id": "quality-gate-tool",
+    "name": "quality-gate-tool",
+    "path": "/home/Workspace/quality-gate-tool"
+  },
+  {
+    "id": "document-intelligent-hub",
+    "name": "document-intelligent-hub",
+    "path": "/home/Workspace/document-intelligent-hub"
   }
 ]

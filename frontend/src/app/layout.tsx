@@ -1,19 +1,19 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Mono } from "next/font/google";
+// import { IBM_Plex_Mono } from "next/font/google";
 import { MantineProvider, createTheme, ColorSchemeScript } from "@mantine/core";
 import "@mantine/core/styles.css";
 import "../styles/matrix.scss";
 
-const ibmPlexMono = IBM_Plex_Mono({
-  weight: ["400", "600", "700"],
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-ibm-plex-mono",
-});
+// const ibmPlexMono = IBM_Plex_Mono({
+//   weight: ["400", "600", "700"],
+//   subsets: ["latin"],
+//   display: "swap",
+//   variable: "--font-ibm-plex-mono",
+// });
 
 const theme = createTheme({
   primaryColor: "green",
-  fontFamily: ibmPlexMono.style.fontFamily,
+  fontFamily: "'IBM Plex Mono', 'Courier New', monospace",
   colors: {
     dark: [
       "#C1C2C5",
@@ -45,7 +45,7 @@ export default function RootLayout({
       <head>
         <ColorSchemeScript defaultColorScheme="dark" />
       </head>
-      <body className={`crt terminal-boot ${ibmPlexMono.className}`}>
+      <body className={`crt terminal-boot`}>
         <MantineProvider theme={theme} defaultColorScheme="dark">
           {children}
         </MantineProvider>

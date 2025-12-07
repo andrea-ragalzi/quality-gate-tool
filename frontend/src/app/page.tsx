@@ -104,12 +104,12 @@ export default function Home() {
 
   // View Full Log
   const viewFullLog = (moduleId: string) => {
-    const module = MODULES_CONFIG.find((m) => m.id === moduleId);
+    const mod = MODULES_CONFIG.find((m) => m.id === moduleId);
     const log = moduleLogs[moduleId];
 
-    if (module && log) {
-      setModalTitle(`Full Log: ${module.title}`);
-      setModalContent(log.fullLog || "No log available.");
+    if (mod && log) {
+      setModalTitle(`SYSTEM_LOG // ${mod.title.toUpperCase()}`);
+      setModalContent(log.fullLog);
       setModalOpened(true);
     }
   };

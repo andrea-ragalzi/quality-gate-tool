@@ -17,6 +17,37 @@
     transform: translateY(-2px);
   }
 
+  &--fail {
+    border-color: vars.$matrix-red;
+    box-shadow: 0 0 15px rgba(vars.$matrix-red, 0.3);
+
+    .module-card__title {
+      color: vars.$matrix-red;
+      text-shadow: 0 0 5px rgba(vars.$matrix-red, 0.5);
+    }
+
+    .module-card__subtitle {
+      color: rgba(vars.$matrix-red, 0.7);
+    }
+
+    .module-card__icon {
+      color: vars.$matrix-red;
+      filter: drop-shadow(0 0 5px rgba(vars.$matrix-red, 0.5));
+    }
+
+    .module-card__summary-text {
+      color: vars.$matrix-red;
+    }
+
+    .module-card__summary-toggle {
+      color: vars.$matrix-red;
+    }
+
+    .module-card__logs-container {
+      border-color: rgba(vars.$matrix-red, 0.3);
+    }
+  }
+
   &__content {
     padding: vars.$spacing-md;
     flex: 1;

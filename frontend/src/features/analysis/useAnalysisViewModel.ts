@@ -43,19 +43,19 @@ export const useAnalysisViewModel = () => {
           fullLog: "",
           status: "PENDING",
         };
-        const module = { ...existingModule };
+        const mod = { ...existingModule };
 
         if (data.type === "LOG" || data.type === "ERROR") {
           const msg = data.data || data.message || data.error;
           const timestamp = new Date().toLocaleTimeString();
           const logLine = `[${timestamp}] ${msg}`;
-          module.logs = [...module.logs, logLine].slice(-10);
-          module.fullLog += logLine + "\n";
+          mod.logs = [...mod.logs, logLine].slice(-10);
+          mod.fullLog += logLine + "\n";
         } else if (data.type === "STREAM") {
           const msg = data.data || data.message;
-          module.fullLog += msg;
+          mod.fullLog += msg;
           // Simple stream appending logic for logs array
-          const currentLogs = [...module.logs];
+          const currentLogs = [...mod.logs];
           if (
             currentLogs.length > 0 &&
             !currentLogs[currentLogs.length - 1].endsWith("\n")
@@ -64,17 +64,17 @@ export const useAnalysisViewModel = () => {
           } else {
             currentLogs.push(msg);
           }
-          module.logs = currentLogs.slice(-10);
+          mod.logs = currentLogs.slice(-10);
         } else if (data.type === "INIT") {
-          module.status = "RUNNING";
-          module.logs = ["Analysis started..."];
-          module.fullLog = "Analysis started...\n";
+          mod.status = "RUNNING";
+          mod.logs = ["Analysis started..."];
+          mod.fullLog = "Analysis started...\n";
         } else if (data.type === "END") {
-          module.status = data.status === "PASS" ? "PASS" : "FAIL";
-          module.summary = data.summary;
+          mod.status = data.status === "PASS" ? "PASS" : "FAIL";
+          mod.summary = data.summary;
         }
 
-        newState.moduleLogs = { ...newState.moduleLogs, [moduleId]: module };
+        newState.moduleLogs = { ...newState.moduleLogs, [moduleId]: mod };
       }
 
       // 2. Global Updates
@@ -87,7 +87,7 @@ export const useAnalysisViewModel = () => {
         // Reset logs? Maybe not if incremental
       } else if (data.type === "GLOBAL_END") {
         newState.isAnalyzing = false;
-        newState.overallStatus = data.status === "PASS" ? "PASS" : "FAIL";
+        newState.overallStatus = data.status === "PASS" ? "SUCCESS" : "FAILURE";
       }
 
       return newState;

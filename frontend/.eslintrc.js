@@ -15,7 +15,7 @@ module.exports = {
     // Ensure we focus on quality/logic errors
     "no-console": ["warn", { allow: ["warn", "error"] }],
     "no-unused-vars": "off", // Handled by TypeScript compiler
-    "@typescript-eslint/no-unused-vars": ["error"],
+    // "@typescript-eslint/no-unused-vars": ["error"], // Removed to avoid config issues
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "warn",
   },

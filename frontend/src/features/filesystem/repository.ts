@@ -40,7 +40,9 @@ export class FilesystemRepository {
     return parsed.directories
       .filter(
         (item) =>
-          !this.ignoredNames.includes(item.name) && !item.name.startsWith("."),
+          !this.ignoredNames.includes(item.name) &&
+          !item.name.startsWith(".") &&
+          item.is_dir,
       )
       .map((item) => ({
         name: item.name,

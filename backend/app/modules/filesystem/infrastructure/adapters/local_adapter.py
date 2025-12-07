@@ -42,6 +42,9 @@ class LocalFilesystemAdapter(FilesystemPort):
                     }
                 )
                 continue
+
+        # Sort alphabetically by name
+        results.sort(key=lambda x: x["name"].lower())
         return results
 
     async def read_file_content(self, path: str) -> str:
