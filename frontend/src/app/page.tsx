@@ -65,6 +65,7 @@ export default function Home() {
     "/home/Workspace/quality-gate-tool",
   );
   const [selectedDirectory, setSelectedDirectory] = useState<string>("");
+  const [numColumns, setNumColumns] = useState(1);
 
   // Modals
   const [modalOpened, setModalOpened] = useState(false);
@@ -74,6 +75,26 @@ export default function Home() {
   const [settingsOpened, setSettingsOpened] = useState(false);
   const [selectedTools, setSelectedTools] = useState<string[]>(
     MODULES_CONFIG.map((m) => m.id),
+  );
+
+  // Responsive Columns Logic
+  useEffect(() => {
+    const updateColumns = () => {
+      if (window.innerWidth >= 1400) setNumColumns(4);
+      else if (window.innerWidth >= 768) setNumColumns(2);
+      else setNumColumns(1);
+    };
+    updateColumns();
+    window.addEventListener("resize", updateColumns);
+    return () => window.removeEventListener("resize", updateColumns);
+  }, []);
+
+  // Distribute modules into columns
+  const activeModules = MODULES_CONFIG.filter((m) =>
+    selectedTools.includes(m.id),
+  );
+  const columns = Array.from({ length: numColumns }, (_, i) =>
+    activeModules.filter((_, index) => index % numColumns === i),
   );
 
   // Loading state for start action (local UI state)
@@ -330,76 +351,31 @@ export default function Home() {
                 </Title>
               </Stack>
 
-              <Group gap="xs">
-                <div className="status-indicator status-pass" />
-                <Text className="text-matrix" size="xs" tt="uppercase" fw={700}>
-                  LIVE
-                </Text>
-              </Group>
-
               <div className="dashboard__status-box">
                 <Text size="xl" fw={900} tt="uppercase" ta="center" c="#b8860b">
                   [STATUS: {getStatusText()}]
                 </Text>
               </div>
 
-              {/* Backend Modules Section */}
+              {/* Active Modules Section */}
               <div>
-                <Text
-                  size="lg"
-                  fw={700}
-                  className="dashboard__panel-title"
-                  tt="uppercase"
-                  mb="lg"
-                >
-                  1. :: BACKEND MODULES [PYTHON]
-                </Text>
-                <div className="modules-row">
-                  {MODULES_CONFIG.filter(
-                    (m) => m.role === "backend" && selectedTools.includes(m.id),
-                  ).map((module) => (
-                    <ModuleCard
-                      key={module.id}
-                      moduleId={module.id}
-                      title={module.title}
-                      subtitle={module.subtitle}
-                      icon={module.icon}
-                      status={moduleLogs[module.id]?.status || "PENDING"}
-                      logs={moduleLogs[module.id]?.logs || []}
-                      summary={moduleLogs[module.id]?.summary}
-                      onViewLog={() => viewFullLog(module.id)}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {/* Frontend Modules Section */}
-              <div>
-                <Text
-                  size="lg"
-                  fw={700}
-                  className="dashboard__panel-title"
-                  tt="uppercase"
-                  mb="lg"
-                >
-                  2. :: FRONTEND MODULES [TYPESCRIPT]
-                </Text>
-                <div className="modules-row">
-                  {MODULES_CONFIG.filter(
-                    (m) =>
-                      m.role === "frontend" && selectedTools.includes(m.id),
-                  ).map((module) => (
-                    <ModuleCard
-                      key={module.id}
-                      moduleId={module.id}
-                      title={module.title}
-                      subtitle={module.subtitle}
-                      icon={module.icon}
-                      status={moduleLogs[module.id]?.status || "PENDING"}
-                      logs={moduleLogs[module.id]?.logs || []}
-                      summary={moduleLogs[module.id]?.summary}
-                      onViewLog={() => viewFullLog(module.id)}
-                    />
+                <div className="modules-grid">
+                  {columns.map((colModules, colIndex) => (
+                    <div key={colIndex} className="modules-column">
+                      {colModules.map((module) => (
+                        <ModuleCard
+                          key={module.id}
+                          moduleId={module.id}
+                          title={module.title}
+                          subtitle={module.subtitle}
+                          icon={module.icon}
+                          status={moduleLogs[module.id]?.status || "PENDING"}
+                          logs={moduleLogs[module.id]?.logs || []}
+                          summary={moduleLogs[module.id]?.summary}
+                          onViewLog={() => viewFullLog(module.id)}
+                        />
+                      ))}
+                    </div>
                   ))}
                 </div>
               </div>
@@ -460,67 +436,33 @@ export default function Home() {
               Select active analysis modules:
             </Text>
 
-            <Group align="flex-start">
-              <Stack gap="xs" style={{ flex: 1 }}>
-                <Text size="xs" fw={700} tt="uppercase" c="dimmed">
-                  Frontend
-                </Text>
-                {MODULES_CONFIG.filter((m) => m.role === "frontend").map(
-                  (module) => (
-                    <Checkbox
-                      key={module.id}
-                      label={module.title}
-                      description={module.subtitle}
-                      checked={selectedTools.includes(module.id)}
-                      onChange={(event) => {
-                        if (event.currentTarget.checked) {
-                          setSelectedTools([...selectedTools, module.id]);
-                        } else {
-                          setSelectedTools(
-                            selectedTools.filter((id) => id !== module.id),
-                          );
-                        }
-                      }}
-                      color="green"
-                      styles={{
-                        label: { color: "#00ff41", fontFamily: "monospace" },
-                        description: { color: "#00aa2c" },
-                      }}
-                    />
-                  ),
-                )}
-              </Stack>
-
-              <Stack gap="xs" style={{ flex: 1 }}>
-                <Text size="xs" fw={700} tt="uppercase" c="dimmed">
-                  Backend
-                </Text>
-                {MODULES_CONFIG.filter((m) => m.role === "backend").map(
-                  (module) => (
-                    <Checkbox
-                      key={module.id}
-                      label={module.title}
-                      description={module.subtitle}
-                      checked={selectedTools.includes(module.id)}
-                      onChange={(event) => {
-                        if (event.currentTarget.checked) {
-                          setSelectedTools([...selectedTools, module.id]);
-                        } else {
-                          setSelectedTools(
-                            selectedTools.filter((id) => id !== module.id),
-                          );
-                        }
-                      }}
-                      color="green"
-                      styles={{
-                        label: { color: "#00ff41", fontFamily: "monospace" },
-                        description: { color: "#00aa2c" },
-                      }}
-                    />
-                  ),
-                )}
-              </Stack>
-            </Group>
+            <Stack gap="xs">
+              <Text size="xs" fw={700} tt="uppercase" c="dimmed">
+                Modules
+              </Text>
+              {MODULES_CONFIG.map((module) => (
+                <Checkbox
+                  key={module.id}
+                  label={module.title}
+                  description={module.subtitle}
+                  checked={selectedTools.includes(module.id)}
+                  onChange={(event) => {
+                    if (event.currentTarget.checked) {
+                      setSelectedTools([...selectedTools, module.id]);
+                    } else {
+                      setSelectedTools(
+                        selectedTools.filter((id) => id !== module.id),
+                      );
+                    }
+                  }}
+                  color="green"
+                  styles={{
+                    label: { color: "#00ff41", fontFamily: "monospace" },
+                    description: { color: "#00aa2c" },
+                  }}
+                />
+              ))}
+            </Stack>
 
             <Group justify="flex-end" mt="xl">
               <Button
