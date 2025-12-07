@@ -1,7 +1,6 @@
 """
 Quality Gate Analysis Modules - 6 Modules Specification
-Frontend: F_TypeScript, F_ESLint, F_Complexity
-Backend: B_Ruff, B_Pyright, B_Lizard
+Modules: F_TypeScript, F_ESLint, F_Complexity, B_Ruff, B_Pyright, B_Lizard
 """
 
 import json
@@ -15,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 # ============================================================================
-# FRONTEND MODULES (2)
+# ANALYSIS MODULES
 # ============================================================================
 
 
@@ -127,11 +126,6 @@ class ESLintComplexityModule(AnalysisModule):
             pass
 
         return "❌ Complexity check failed" if exit_code != 0 else "✅ Complexity OK"
-
-
-# ============================================================================
-# BACKEND MODULES (3)
-# ============================================================================
 
 
 class RuffModule(AnalysisModule):
@@ -260,11 +254,9 @@ class LizardModule(AnalysisModule):
 # ============================================================================
 
 MODULE_CLASSES = {
-    # Frontend modules
     "F_TypeScript": TypeScriptModule,
     "F_ESLint": ESLintModule,
     "F_Complexity": ESLintComplexityModule,
-    # Backend modules
     "B_Ruff": RuffModule,
     "B_Pyright": PyrightModule,
     "B_Lizard": LizardModule,
