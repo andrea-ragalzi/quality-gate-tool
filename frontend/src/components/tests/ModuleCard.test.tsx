@@ -80,4 +80,21 @@ describe("ModuleCard (Presentation)", () => {
     // Depending on implementation, it might show the logs or a count.
     // Let's assume it shows the last log line or similar.
   });
+
+  it("should copy logs to clipboard when copy button is clicked", () => {
+    const logs = ["Log 1", "Log 2"];
+    const writeText = vi.fn();
+    Object.assign(navigator, {
+      clipboard: {
+        writeText,
+      },
+    });
+
+    renderWithMantine(<ModuleCard {...defaultProps} logs={logs} />);
+
+    const copyButton = screen.getByRole("button", { name: /copy/i });
+    fireEvent.click(copyButton);
+
+    expect(writeText).toHaveBeenCalledWith(logs.join("\n"));
+  });
 });
