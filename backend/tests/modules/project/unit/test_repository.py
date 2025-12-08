@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 
 from app.modules.project.domain.entities import Project
@@ -7,13 +9,13 @@ from app.modules.project.infrastructure.adapters.json_repository import (
 
 
 @pytest.fixture
-def repo(tmp_path):
+def repo(tmp_path: Path) -> ProjectJSONRepository:
     file_path = tmp_path / "projects.json"
     return ProjectJSONRepository(str(file_path))
 
 
 @pytest.mark.asyncio
-async def test_save_and_get_all(repo):
+async def test_save_and_get_all(repo: ProjectJSONRepository):
     project = Project(id="p1", name="Project 1", path="/tmp/p1")
 
     await repo.save(project)
@@ -25,7 +27,7 @@ async def test_save_and_get_all(repo):
 
 
 @pytest.mark.asyncio
-async def test_get_by_id(repo):
+async def test_get_by_id(repo: ProjectJSONRepository):
     project = Project(id="p1", name="Project 1", path="/tmp/p1")
     await repo.save(project)
 
@@ -38,7 +40,7 @@ async def test_get_by_id(repo):
 
 
 @pytest.mark.asyncio
-async def test_update_project(repo):
+async def test_update_project(repo: ProjectJSONRepository):
     project = Project(id="p1", name="Project 1", path="/tmp/p1")
     await repo.save(project)
 
@@ -46,4 +48,5 @@ async def test_update_project(repo):
     await repo.save(project)
 
     found = await repo.get_by_id("p1")
+    assert found is not None
     assert found.name == "Updated Project 1"

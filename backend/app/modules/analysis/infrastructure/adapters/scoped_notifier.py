@@ -1,7 +1,10 @@
+import logging
 from typing import Any, Dict
 
 from ...domain.ports import AnalysisNotifierPort
 from ...infrastructure.adapters.websocket_notifier import WebSocketNotifier
+
+logger = logging.getLogger(__name__)
 
 
 class ScopedAnalysisNotifier(AnalysisNotifierPort):
@@ -9,9 +12,10 @@ class ScopedAnalysisNotifier(AnalysisNotifierPort):
         self.notifier = notifier
         self.project_id = project_id
 
-    async def send_update(self, project_id: str, message: dict):
+    async def send_update(self, project_id: str, message: Dict[str, Any]):
         # Ignores passed project_id, uses scoped one, or maybe validates it?
         # The interface has project_id, but Orchestrator calls other methods.
+        logger.debug(f"Sending WS update to {self.project_id}: {message.get('type')}")
         await self.notifier.send_update(self.project_id, message)
 
     async def send_global_init(self):

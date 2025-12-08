@@ -28,6 +28,7 @@ lizard = "^1.17.10"
 pytest-cov = "^7.0.0"
 pytest-asyncio = "^1.3.0"
 pre-commit = "^4.5.0"
+locust = "^2.32.0"
 
 [build-system]
 requires = ["poetry-core"]
@@ -64,18 +65,20 @@ line-ending = "auto"
 # PYRIGHT CONFIGURATION (Type Checking)
 # ============================================================================
 [tool.pyright]
+include = ["app", "tests"]
+venvPath = "."
+venv = ".venv"
 typeCheckingMode = "strict"
 pythonVersion = "3.12"
+extraPaths = ["."]
 
 # Enable unused import reporting
 reportUnusedImport = true
 
-# Disable style/linting rules (handled by Ruff)
-reportMissingTypeStubs = true
-reportMissingImports = true
-reportUnusedVariable = false  # Handled by Ruff (F841)
-reportUnusedClass = false
-reportUnusedFunction = false
+[[tool.pyright.executionEnvironments]]
+root = "tests"
+reportMissingImports = "none"
+reportMissingTypeStubs = "none"
 
 # ============================================================================
 # LIZARD CONFIGURATION (Complexity)

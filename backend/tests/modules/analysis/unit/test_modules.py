@@ -18,15 +18,15 @@ from app.modules.analysis.domain.ports import AnalysisNotifierPort
 
 
 class MockModule(AnalysisModule):
-    def get_command(self, files=None):
+    def get_command(self, files: list[str] | None = None) -> list[str]:
         return ["echo", "hello"]
 
-    def get_summary(self, stdout, stderr, exit_code):
+    def get_summary(self, stdout: str, stderr: str, exit_code: int) -> str:
         return "Summary"
 
 
 @pytest.fixture
-def mock_notifier():
+def mock_notifier() -> MagicMock:
     mock = AsyncMock(spec=AnalysisNotifierPort)
     # Add methods that might be missing from the spec if not updated
     mock.send_init = AsyncMock()
@@ -38,7 +38,7 @@ def mock_notifier():
 
 
 @pytest.mark.asyncio
-async def test_base_module_run_success(mock_notifier):
+async def test_base_module_run_success(mock_notifier: MagicMock):
     # Arrange
     module = MockModule("test_mod", "Test Module", "/tmp/test", mock_notifier)
 
@@ -63,7 +63,7 @@ async def test_base_module_run_success(mock_notifier):
 
 
 @pytest.mark.asyncio
-async def test_base_module_run_failure(mock_notifier):
+async def test_base_module_run_failure(mock_notifier: MagicMock):
     # Arrange
     module = MockModule("test_mod", "Test Module", "/tmp/test", mock_notifier)
 
@@ -85,7 +85,7 @@ async def test_base_module_run_failure(mock_notifier):
 
 
 @pytest.mark.asyncio
-async def test_base_module_run_exception(mock_notifier):
+async def test_base_module_run_exception(mock_notifier: MagicMock):
     # Arrange
     module = MockModule("test_mod", "Test Module", "/tmp/test", mock_notifier)
 
@@ -102,7 +102,7 @@ async def test_base_module_run_exception(mock_notifier):
 # --- Concrete Modules Tests ---
 
 
-def test_typescript_module(mock_notifier):
+def test_typescript_module(mock_notifier: MagicMock):
     module = TypeScriptModule("ts", "TS", "/tmp", mock_notifier)
 
     # Command
@@ -114,7 +114,7 @@ def test_typescript_module(mock_notifier):
     assert module.get_summary("Generic error", "", 1) == "❌ Type checking failed"
 
 
-def test_eslint_module(mock_notifier):
+def test_eslint_module(mock_notifier: MagicMock):
     module = ESLintModule("eslint", "ESLint", "/tmp", mock_notifier)
 
     # Command
@@ -137,7 +137,7 @@ def test_eslint_module(mock_notifier):
     assert module.get_summary("Invalid JSON", "", 1) == "❌ ESLint check failed"
 
 
-def test_eslint_complexity_module(mock_notifier):
+def test_eslint_complexity_module(mock_notifier: MagicMock):
     module = ESLintComplexityModule("complex", "Complexity", "/tmp", mock_notifier)
 
     # Command
@@ -149,7 +149,7 @@ def test_eslint_complexity_module(mock_notifier):
     assert "❌ 1 function(s) exceed complexity 15" in module.get_summary(json_output, "", 1)
 
 
-def test_ruff_module(mock_notifier):
+def test_ruff_module(mock_notifier: MagicMock):
     module = RuffModule("ruff", "Ruff", "/tmp", mock_notifier)
 
     # Command
@@ -161,7 +161,7 @@ def test_ruff_module(mock_notifier):
     assert module.get_summary("", "", 0) == "✅ No linting issues"
 
 
-def test_pyright_module(mock_notifier):
+def test_pyright_module(mock_notifier: MagicMock):
     module = PyrightModule("pyright", "Pyright", "/tmp", mock_notifier)
 
     # Command
@@ -174,7 +174,7 @@ def test_pyright_module(mock_notifier):
     assert module.get_summary("", "", 0) == "✅ No type errors (strict mode)"
 
 
-def test_lizard_module(mock_notifier):
+def test_lizard_module(mock_notifier: MagicMock):
     module = LizardModule("lizard", "Lizard", "/tmp", mock_notifier)
 
     # Command
@@ -191,7 +191,7 @@ def test_lizard_module(mock_notifier):
 
 
 @pytest.mark.asyncio
-async def test_base_module_cancellation(mock_notifier):
+async def test_base_module_cancellation(mock_notifier: MagicMock):
     # Arrange
     module = MockModule("test_mod", "Test Module", "/tmp/test", mock_notifier)
 
@@ -214,7 +214,7 @@ async def test_base_module_cancellation(mock_notifier):
 
 
 @pytest.mark.asyncio
-async def test_base_module_process_termination_on_exception(mock_notifier):
+async def test_base_module_process_termination_on_exception(mock_notifier: MagicMock):
     # Arrange
     module = MockModule("test_mod", "Test Module", "/tmp/test", mock_notifier)
 
@@ -235,7 +235,7 @@ async def test_base_module_process_termination_on_exception(mock_notifier):
     mock_process.terminate.assert_called()
 
 
-def test_eslint_module_with_files(mock_notifier):
+def test_eslint_module_with_files(mock_notifier: MagicMock):
     module = ESLintModule("eslint", "ESLint", "/tmp", mock_notifier)
 
     # Test with JS/TS files
@@ -249,7 +249,7 @@ def test_eslint_module_with_files(mock_notifier):
     assert "src/" in cmd
 
 
-def test_eslint_module_invalid_json(mock_notifier):
+def test_eslint_module_invalid_json(mock_notifier: MagicMock):
     module = ESLintModule("eslint", "ESLint", "/tmp", mock_notifier)
 
     # Invalid JSON
@@ -261,7 +261,7 @@ def test_eslint_module_invalid_json(mock_notifier):
     assert summary == "✅ No linting issues"
 
 
-def test_typescript_module_generic_failure(mock_notifier):
+def test_typescript_module_generic_failure(mock_notifier: MagicMock):
     module = TypeScriptModule("ts", "TypeScript", "/tmp", mock_notifier)
 
     # Exit code 1 but no "error TS" lines

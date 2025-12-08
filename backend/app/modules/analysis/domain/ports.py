@@ -4,7 +4,7 @@ from typing import Any, Dict
 
 class AnalysisNotifierPort(ABC):
     @abstractmethod
-    async def send_update(self, project_id: str, message: dict):
+    async def send_update(self, project_id: str, message: Dict[str, Any]):
         pass  # pragma: no cover
 
     @abstractmethod

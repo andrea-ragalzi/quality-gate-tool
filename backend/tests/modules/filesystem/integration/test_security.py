@@ -1,3 +1,5 @@
+from typing import Generator
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -11,7 +13,7 @@ from app.modules.filesystem.infrastructure.web.router import get_filesystem_serv
 
 # Setup Dependency Injection for Test
 @pytest.fixture
-def client():
+def client() -> Generator[TestClient, None, None]:
     fs_adapter = LocalFilesystemAdapter()
     fs_service = FilesystemService(fs_adapter)
     app.dependency_overrides[get_filesystem_service] = lambda: fs_service
@@ -23,7 +25,7 @@ def client():
     app.dependency_overrides = {}
 
 
-def test_list_files_injection_attempt(client):
+def test_list_files_injection_attempt(client: TestClient):
     """
     Security Test: Verify that malicious input is treated as a path
     and not executed (Command Injection Prevention).
@@ -39,7 +41,7 @@ def test_list_files_injection_attempt(client):
     assert "not a valid directory" in response.json()["detail"]
 
 
-def test_list_files_path_traversal_attempt(client):
+def test_list_files_path_traversal_attempt(client: TestClient):
     """
     Security Test: Verify that path traversal attempts are handled gracefully.
     (Note: Currently the app allows reading any file, but it should still return 400 for invalid ones)

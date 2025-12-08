@@ -1,8 +1,11 @@
-from typing import Dict, List
+import logging
+from typing import Any, Dict, List
 
 from fastapi import WebSocket
 
 # from ...domain.ports import AnalysisNotifierPort # Not needed if we don't inherit
+
+logger = logging.getLogger(__name__)
 
 
 class WebSocketNotifier:
@@ -14,6 +17,9 @@ class WebSocketNotifier:
         if project_id not in self.active_connections:
             self.active_connections[project_id] = []
         self.active_connections[project_id].append(websocket)
+        logger.info(
+            f"WS Connected: {project_id} (Total: {len(self.active_connections[project_id])})"
+        )
 
     def disconnect(self, websocket: WebSocket, project_id: str):
         if project_id in self.active_connections:
@@ -22,10 +28,12 @@ class WebSocketNotifier:
             if not self.active_connections[project_id]:
                 del self.active_connections[project_id]
 
-    async def send_update(self, project_id: str, message: dict):
+    async def send_update(self, project_id: str, message: Dict[str, Any]):
         if project_id in self.active_connections:
             for connection in self.active_connections[project_id]:
                 try:
                     await connection.send_json(message)
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.error(f"Error sending WS message: {e}")
+        else:
+            logger.warning(f"No active WS connections for project_id: {project_id}")

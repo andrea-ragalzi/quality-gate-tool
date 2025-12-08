@@ -6,9 +6,10 @@ Implements strict resource control with Semaphore for stability
 import asyncio
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional, Union
 
 from ...domain.ports import AnalysisNotifierPort
+from .base_module import AnalysisModule
 from .modules import MODULE_CLASSES
 
 logger = logging.getLogger(__name__)
@@ -97,7 +98,7 @@ class AnalysisOrchestrator:
             module_configs = all_module_configs
 
         # Create all module instances
-        modules = []
+        modules: List[AnalysisModule] = []
         for config in module_configs:
             module_class = MODULE_CLASSES.get(config["id"])
             if module_class:
@@ -109,7 +110,9 @@ class AnalysisOrchestrator:
                 )
                 modules.append(module)
 
-        async def run_module_with_semaphore(module):
+        async def run_module_with_semaphore(
+            module: AnalysisModule,
+        ) -> Union[str, Literal["FAIL"]]:
             """Wrapper to enforce semaphore limit - CRITICAL FOR STABILITY"""
             async with self.analysis_semaphore:
                 logger.info(
@@ -128,11 +131,15 @@ class AnalysisOrchestrator:
         logger.info(
             f"🚀 Launching {len(modules)} modules (max {MAX_CONCURRENT_ANALYSIS} concurrent)"
         )
-        tasks = [asyncio.create_task(run_module_with_semaphore(module)) for module in modules]
+        tasks: List[asyncio.Task[Union[str, Literal["FAIL"]]]] = [
+            asyncio.create_task(run_module_with_semaphore(module)) for module in modules
+        ]
 
         try:
             # Wait for all tasks to complete
-            results = await asyncio.gather(*tasks, return_exceptions=True)
+            results: List[Union[str, BaseException, Literal["FAIL"]]] = await asyncio.gather(
+                *tasks, return_exceptions=True
+            )
         except asyncio.CancelledError:
             logger.info("🛑 Orchestrator cancelled, cancelling child modules...")
             for task in tasks:
@@ -143,9 +150,9 @@ class AnalysisOrchestrator:
             raise
 
         # Collect results
-        status_map = {}
+        status_map: Dict[str, Union[str, Literal["FAIL"]]] = {}
         for module, result in zip(modules, results, strict=False):
-            if isinstance(result, Exception):
+            if isinstance(result, BaseException):
                 logger.error(f"Module {module.module_id} raised exception: {result}")
                 status_map[module.module_id] = "FAIL"
             else:
@@ -167,7 +174,7 @@ class AnalysisOrchestrator:
 
         return overall_status
 
-    async def execute(self) -> Dict[str, Any]:
+    async def execute(self, files: Optional[List[str]] = None) -> Dict[str, Any]:
         """
         Main execution method
         Returns analysis report
@@ -176,11 +183,25 @@ class AnalysisOrchestrator:
             # Send global INIT
             await self.ws_manager.send_global_init()
 
-            # Step 1: Get modified files (incremental mode only)
-            modified_files: Optional[List[str]] = await self.get_modified_files()
+            # Step 1: Determine files to analyze
+            modified_files: Optional[List[str]] = None
+
+            if self.mode == "incremental":
+                if files:
+                    # Use explicitly provided files (e.g. from Watchdog)
+                    modified_files = files
+                    logger.info(
+                        f"🔍 Incremental analysis on {len(modified_files)} provided file(s)"
+                    )
+                else:
+                    # Fallback to git diff
+                    modified_files = await self.get_modified_files()
+                    if modified_files:
+                        logger.info(
+                            f"🔍 Incremental analysis on {len(modified_files)} git-detected file(s)"
+                        )
 
             if self.mode == "incremental" and modified_files:
-                logger.info(f"🔍 Incremental analysis on {len(modified_files)} file(s)")
                 await self.ws_manager.broadcast_raw(
                     {
                         "type": "LOG",

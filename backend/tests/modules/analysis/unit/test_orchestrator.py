@@ -1,4 +1,4 @@
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
@@ -7,12 +7,12 @@ from app.modules.analysis.domain.ports import AnalysisNotifierPort
 
 
 @pytest.fixture
-def mock_notifier():
+def mock_notifier() -> MagicMock:
     return AsyncMock(spec=AnalysisNotifierPort)
 
 
 @pytest.mark.asyncio
-async def test_orchestrator_initialization(mock_notifier):
+async def test_orchestrator_initialization(mock_notifier: MagicMock):
     # Arrange
     project_path = "/tmp/test"
     mode = "full"
@@ -29,7 +29,7 @@ async def test_orchestrator_initialization(mock_notifier):
 
 
 @pytest.mark.asyncio
-async def test_orchestrator_incremental_mode(mock_notifier):
+async def test_orchestrator_incremental_mode(mock_notifier: MagicMock):
     # Arrange
     project_path = "/tmp/test"
     mode = "incremental"

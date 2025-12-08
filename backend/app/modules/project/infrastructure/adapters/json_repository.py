@@ -1,6 +1,6 @@
 import json
 from pathlib import Path
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from ...domain.entities import Project
 from ...domain.ports import ProjectRepositoryPort
@@ -16,11 +16,11 @@ class ProjectJSONRepository(ProjectRepositoryPort):
             with open(self.file_path, "w") as f:
                 json.dump([], f)
 
-    def _read_data(self) -> List[dict]:
+    def _read_data(self) -> List[Dict[str, Any]]:
         with open(self.file_path, "r") as f:
             return json.load(f)
 
-    def _write_data(self, data: List[dict]):
+    def _write_data(self, data: List[Dict[str, Any]]):
         with open(self.file_path, "w") as f:
             json.dump(data, f, indent=2)
 

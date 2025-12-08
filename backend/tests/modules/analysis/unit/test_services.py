@@ -1,4 +1,4 @@
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -9,12 +9,12 @@ from app.modules.analysis.infrastructure.adapters.websocket_notifier import (
 
 
 @pytest.fixture
-def mock_websocket_notifier():
+def mock_websocket_notifier() -> MagicMock:
     return AsyncMock(spec=WebSocketNotifier)
 
 
 @pytest.mark.asyncio
-async def test_start_analysis_watch_mode(mock_websocket_notifier):
+async def test_start_analysis_watch_mode(mock_websocket_notifier: MagicMock):
     # Arrange
     service = AnalysisOrchestratorService(notifier=mock_websocket_notifier)
     project_id = "test_project"
@@ -44,7 +44,7 @@ async def test_start_analysis_watch_mode(mock_websocket_notifier):
 
 
 @pytest.mark.asyncio
-async def test_start_analysis_full_mode(mock_websocket_notifier):
+async def test_start_analysis_full_mode(mock_websocket_notifier: MagicMock):
     # Arrange
     service = AnalysisOrchestratorService(notifier=mock_websocket_notifier)
     project_id = "test_project"
@@ -69,7 +69,7 @@ async def test_start_analysis_full_mode(mock_websocket_notifier):
 
 
 @pytest.mark.asyncio
-async def test_start_analysis_full_mode_execution(mock_websocket_notifier):
+async def test_start_analysis_full_mode_execution(mock_websocket_notifier: MagicMock):
     service = AnalysisOrchestratorService(notifier=mock_websocket_notifier)
 
     # Mock AnalysisOrchestrator

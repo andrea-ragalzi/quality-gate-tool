@@ -6,7 +6,7 @@ Modules: F_TypeScript, F_ESLint, F_Complexity, B_Ruff, B_Pyright, B_Lizard
 import json
 import logging
 import re
-from typing import List
+from typing import Any, Dict, List, Optional
 
 from .base_module import AnalysisModule
 
@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 class TypeScriptModule(AnalysisModule):
     """F_TypeScript: TypeScript Type Checking"""
 
-    def get_command(self, files: List[str] = None) -> List[str]:
+    def get_command(self, files: Optional[List[str]] = None) -> List[str]:
         # Run TypeScript compiler in check mode
         return ["npx", "tsc", "--noEmit", "--pretty", "false"]
 
@@ -41,7 +41,7 @@ class TypeScriptModule(AnalysisModule):
 class ESLintModule(AnalysisModule):
     """F_ESLint: Linting and Quality Check"""
 
-    def get_command(self, files: List[str] = None) -> List[str]:
+    def get_command(self, files: Optional[List[str]] = None) -> List[str]:
         cmd = ["npx", "eslint", "--format", "json"]
 
         if files:
@@ -84,7 +84,7 @@ class ESLintModule(AnalysisModule):
 class ESLintComplexityModule(AnalysisModule):
     """F_Complexity: Cyclomatic Complexity Check (Max 15)"""
 
-    def get_command(self, files: List[str] = None) -> List[str]:
+    def get_command(self, files: Optional[List[str]] = None) -> List[str]:
         # ESLint with complexity rule enabled
         cmd = [
             "npx",
@@ -111,7 +111,7 @@ class ESLintComplexityModule(AnalysisModule):
         try:
             if stdout.strip():
                 results = json.loads(stdout)
-                complexity_errors = []
+                complexity_errors: List[Dict[str, Any]] = []
 
                 for result in results:
                     for msg in result.get("messages", []):
@@ -131,7 +131,7 @@ class ESLintComplexityModule(AnalysisModule):
 class RuffModule(AnalysisModule):
     """B_Ruff: Python Linting and Formatting"""
 
-    def get_command(self, files: List[str] = None) -> List[str]:
+    def get_command(self, files: Optional[List[str]] = None) -> List[str]:
         # Use text output for streaming
         cmd = ["ruff", "check"]
 
@@ -168,7 +168,7 @@ class RuffModule(AnalysisModule):
 class PyrightModule(AnalysisModule):
     """B_Pyright: Python Strict Type Checking"""
 
-    def get_command(self, files: List[str] = None) -> List[str]:
+    def get_command(self, files: Optional[List[str]] = None) -> List[str]:
         # Use python3 -u -m pyright to ensure unbuffered output
         # Remove --outputjson to get text output for streaming
         cmd = ["python3", "-u", "-m", "pyright"]
@@ -202,7 +202,7 @@ class PyrightModule(AnalysisModule):
 class LizardModule(AnalysisModule):
     """B_Lizard: Python Cyclomatic Complexity (Max 15)"""
 
-    def get_command(self, files: List[str] = None) -> List[str]:
+    def get_command(self, files: Optional[List[str]] = None) -> List[str]:
         # Use python3 -u -m lizard to ensure unbuffered output
         cmd = [
             "python3",

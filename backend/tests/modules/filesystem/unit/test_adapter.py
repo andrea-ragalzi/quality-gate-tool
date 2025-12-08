@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 
 from app.modules.filesystem.infrastructure.adapters.local_adapter import (
@@ -6,12 +8,12 @@ from app.modules.filesystem.infrastructure.adapters.local_adapter import (
 
 
 @pytest.fixture
-def adapter():
+def adapter() -> LocalFilesystemAdapter:
     return LocalFilesystemAdapter()
 
 
 @pytest.mark.asyncio
-async def test_list_directory_success(adapter, tmp_path):
+async def test_list_directory_success(adapter: LocalFilesystemAdapter, tmp_path: Path):
     # Arrange
     d = tmp_path / "subdir"
     d.mkdir()
@@ -28,13 +30,13 @@ async def test_list_directory_success(adapter, tmp_path):
 
 
 @pytest.mark.asyncio
-async def test_list_directory_not_found(adapter):
+async def test_list_directory_not_found(adapter: LocalFilesystemAdapter):
     with pytest.raises(ValueError, match="not a valid directory"):
         await adapter.list_directory("/non/existent/path")
 
 
 @pytest.mark.asyncio
-async def test_list_directory_is_file(adapter, tmp_path):
+async def test_list_directory_is_file(adapter: LocalFilesystemAdapter, tmp_path: Path):
     f = tmp_path / "file.txt"
     f.write_text("content")
 
@@ -43,7 +45,7 @@ async def test_list_directory_is_file(adapter, tmp_path):
 
 
 @pytest.mark.asyncio
-async def test_read_file_content_success(adapter, tmp_path):
+async def test_read_file_content_success(adapter: LocalFilesystemAdapter, tmp_path: Path):
     f = tmp_path / "test.txt"
     f.write_text("Hello World")
 
@@ -52,13 +54,13 @@ async def test_read_file_content_success(adapter, tmp_path):
 
 
 @pytest.mark.asyncio
-async def test_read_file_content_not_found(adapter):
+async def test_read_file_content_not_found(adapter: LocalFilesystemAdapter):
     with pytest.raises(ValueError, match="not a valid file"):
         await adapter.read_file_content("/non/existent/file.txt")
 
 
 @pytest.mark.asyncio
-async def test_path_exists(adapter, tmp_path):
+async def test_path_exists(adapter: LocalFilesystemAdapter, tmp_path: Path):
     f = tmp_path / "exists.txt"
     f.touch()
 
@@ -67,7 +69,7 @@ async def test_path_exists(adapter, tmp_path):
 
 
 @pytest.mark.asyncio
-async def test_list_directory_details_success(adapter, tmp_path):
+async def test_list_directory_details_success(adapter: LocalFilesystemAdapter, tmp_path: Path):
     # Arrange
     d = tmp_path / "details_dir"
     d.mkdir()
@@ -100,6 +102,6 @@ async def test_list_directory_details_success(adapter, tmp_path):
 
 
 @pytest.mark.asyncio
-async def test_list_directory_details_not_found(adapter):
+async def test_list_directory_details_not_found(adapter: LocalFilesystemAdapter):
     with pytest.raises(ValueError, match="not a valid directory"):
         await adapter.list_directory_details("/non/existent/path")

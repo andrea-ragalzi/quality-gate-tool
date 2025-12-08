@@ -13,5 +13,10 @@
     "id": "document-intelligent-hub",
     "name": "document-intelligent-hub",
     "path": "/home/Workspace/document-intelligent-hub"
+  },
+  {
+    "id": "live_test_playground",
+    "name": "live_test_playground",
+    "path": "/home/Workspace/quality-gate-tool/live_test_playground"
   }
 ]

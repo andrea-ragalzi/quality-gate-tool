@@ -1,3 +1,4 @@
+# pyright: reportPrivateUsage=none
 import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -236,3 +237,66 @@ def test_on_created_ignores_directory():
 
     # Assert
     mock_handle.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_watch_manager_integration_flow():
+    """
+    Verifies that WatchManager correctly sets up the observer and
+    that the analysis callback triggers incremental analysis.
+    """
+    # Arrange
+    ws_manager = AsyncMock()
+    manager = WatchManager("/tmp/test", ws_manager)
+
+    with (
+        patch(
+            "app.modules.analysis.infrastructure.adapters.file_watcher.PollingObserver"
+        ) as MockObserver,
+        patch(
+            "app.modules.analysis.infrastructure.adapters.file_watcher.AnalysisOrchestrator"
+        ) as MockOrchestrator,
+    ):
+        mock_observer = MockObserver.return_value
+        mock_orchestrator = MockOrchestrator.return_value
+        mock_orchestrator.execute = AsyncMock(return_value={"status": "success"})
+
+        # 1. Start Watching (in background task because it waits for stop_event)
+        task = asyncio.create_task(manager.start_watching())
+
+        # Give it a moment to initialize
+        await asyncio.sleep(0.1)
+
+        # Verify Observer started
+        mock_observer.start.assert_called_once()
+
+        # Verify Handler setup
+        args, _ = mock_observer.schedule.call_args
+        handler = args[0]
+        assert isinstance(handler, CodeChangeHandler)
+        assert handler.callback == manager._run_analysis
+
+        # 2. Simulate Callback Execution (as if triggered by Handler)
+        files = ["/tmp/test/changed_file.py"]
+        await manager._run_analysis(files)
+
+        # Verify Incremental Analysis Triggered
+        # We expect 2 calls to Orchestrator:
+        # 1. Full analysis on start
+        # 2. Incremental analysis on change
+        assert MockOrchestrator.call_count == 2
+
+        # Check the incremental call
+        call_args = MockOrchestrator.call_args_list[1]
+        _, kwargs = call_args
+        assert kwargs["mode"] == "incremental"
+        assert kwargs["project_path"] == "/tmp/test"
+
+        # Verify WebSocket notification
+        # We expect "Triggering incremental analysis" log
+        ws_calls = [c[0][0] for c in ws_manager.broadcast_raw.call_args_list]
+        assert any("Auto-triggering analysis" in str(c) for c in ws_calls)
+
+        # Cleanup: Stop the manager
+        manager.stop_event.set()
+        await task

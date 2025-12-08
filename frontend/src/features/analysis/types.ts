@@ -22,6 +22,7 @@ export interface AnalysisState {
   moduleLogs: ModuleLogs;
   isAnalyzing: boolean;
   isWatching: boolean;
+  lastSystemMessage?: string;
 }
 
 export interface StartAnalysisPayload {

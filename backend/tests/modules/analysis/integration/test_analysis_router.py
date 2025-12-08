@@ -1,7 +1,7 @@
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket
 from fastapi.testclient import TestClient
 
 from app.modules.analysis.application.services import AnalysisOrchestratorService
@@ -17,7 +17,7 @@ app.include_router(router)
 
 
 @pytest.fixture
-def mock_service():
+def mock_service() -> MagicMock:
     service = AsyncMock(spec=AnalysisOrchestratorService)
     service.start_analysis.return_value = {"status": "started"}
     service.stop_analysis.return_value = {"status": "stopped"}
@@ -25,13 +25,13 @@ def mock_service():
 
 
 @pytest.fixture
-def mock_notifier():
+def mock_notifier() -> MagicMock:
     notifier = AsyncMock()
 
     # Important: The router calls await notifier.connect(websocket, ...)
     # We need to simulate the side effect of accepting the websocket connection
     # because the real implementation does it.
-    async def side_effect_connect(websocket, project_id):
+    async def side_effect_connect(websocket: WebSocket, project_id: str):
         await websocket.accept()
 
     notifier.connect.side_effect = side_effect_connect
@@ -43,13 +43,13 @@ def mock_notifier():
 
 
 @pytest.fixture
-def client(mock_service, mock_notifier):
+def client(mock_service: MagicMock, mock_notifier: MagicMock) -> TestClient:
     app.dependency_overrides[get_analysis_service] = lambda: mock_service
     app.dependency_overrides[get_notifier] = lambda: mock_notifier
     return TestClient(app)
 
 
-def test_run_analysis(client, mock_service):
+def test_run_analysis(client: TestClient, mock_service: MagicMock):
     payload = {"project_path": "/tmp/test", "mode": "full", "selected_tools": ["tool1"]}
     response = client.post("/api/run-analysis", json=payload)
 
@@ -64,7 +64,7 @@ def test_run_analysis(client, mock_service):
     )
 
 
-def test_stop_analysis(client, mock_service):
+def test_stop_analysis(client: TestClient, mock_service: MagicMock):
     payload = {"project_path": "/tmp/test"}
     response = client.post("/api/stop-analysis", json=payload)
 
@@ -74,7 +74,7 @@ def test_stop_analysis(client, mock_service):
     mock_service.stop_analysis.assert_called_once_with("default_session")
 
 
-def test_websocket_endpoint(client, mock_notifier, mock_service):
+def test_websocket_endpoint(client: TestClient, mock_notifier: MagicMock, mock_service: MagicMock):
     with client.websocket_connect("/api/ws/analysis") as websocket:
         # Verify connection
         mock_notifier.connect.assert_called()

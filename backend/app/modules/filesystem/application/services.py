@@ -1,4 +1,4 @@
-from typing import List
+from typing import Any, Dict, List
 
 from ..domain.ports import FilesystemPort
 
@@ -10,6 +10,6 @@ class FilesystemService:
     async def list_files(self, path: str) -> List[str]:
         return await self.adapter.list_directory(path)
 
-    async def list_files_detailed(self, path: str) -> dict:
+    async def list_files_detailed(self, path: str) -> Dict[str, Any]:
         items = await self.adapter.list_directory_details(path)
         return {"path": path, "directories": items}

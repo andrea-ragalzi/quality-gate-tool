@@ -1,4 +1,4 @@
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
@@ -7,17 +7,17 @@ from app.modules.filesystem.domain.ports import FilesystemPort
 
 
 @pytest.fixture
-def mock_adapter():
+def mock_adapter() -> MagicMock:
     return AsyncMock(spec=FilesystemPort)
 
 
 @pytest.fixture
-def service(mock_adapter):
+def service(mock_adapter: MagicMock) -> FilesystemService:
     return FilesystemService(mock_adapter)
 
 
 @pytest.mark.asyncio
-async def test_list_files(service, mock_adapter):
+async def test_list_files(service: FilesystemService, mock_adapter: MagicMock):
     # Arrange
     mock_adapter.list_directory.return_value = ["file1", "file2"]
 

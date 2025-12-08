@@ -7,7 +7,7 @@ import asyncio
 import logging
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import List, Literal
+from typing import List, Literal, Optional
 
 from ...domain.ports import AnalysisNotifierPort
 
@@ -32,10 +32,10 @@ class AnalysisModule(ABC):
         self.project_path = Path(project_path)
         self.ws_manager = ws_manager
         self.status: Literal["PENDING", "RUNNING", "PASS", "FAIL"] = "PENDING"
-        self.exit_code = None
+        self.exit_code: Optional[int] = None
 
     @abstractmethod
-    def get_command(self, files: List[str] = None) -> List[str]:
+    def get_command(self, files: Optional[List[str]] = None) -> List[str]:
         """
         Return command to execute as list of strings
         files: optional list of files for incremental mode
@@ -47,7 +47,7 @@ class AnalysisModule(ABC):
         """Parse command output and return summary string"""
         pass
 
-    async def run(self, files: List[str] = None) -> Literal["PASS", "FAIL"]:
+    async def run(self, files: Optional[List[str]] = None) -> Literal["PASS", "FAIL"]:
         """
         Execute module with real-time log streaming and RESOURCE CLEANUP
         CRITICAL: Ensures immediate flushing and proper process termination
@@ -80,28 +80,30 @@ class AnalysisModule(ABC):
             )
 
             # Capture output for summary
-            stdout_chunks = []
-            stderr_chunks = []
+            stdout_chunks: List[str] = []
+            stderr_chunks: List[str] = []
 
             # Stream stdout in real-time
             async def stream_stdout():
-                while True:
-                    chunk = await process.stdout.read(64)
-                    if not chunk:
-                        break
-                    decoded = chunk.decode("utf-8", errors="replace")
-                    stdout_chunks.append(decoded)
-                    await self.ws_manager.send_stream(self.module_id, decoded)
+                if process and process.stdout:
+                    while True:
+                        chunk = await process.stdout.read(64)
+                        if not chunk:
+                            break
+                        decoded = chunk.decode("utf-8", errors="replace")
+                        stdout_chunks.append(decoded)
+                        await self.ws_manager.send_stream(self.module_id, decoded)
 
             # Stream stderr in real-time
             async def stream_stderr():
-                while True:
-                    chunk = await process.stderr.read(64)
-                    if not chunk:
-                        break
-                    decoded = chunk.decode("utf-8", errors="replace")
-                    stderr_chunks.append(decoded)
-                    await self.ws_manager.send_stream(self.module_id, decoded)
+                if process and process.stderr:
+                    while True:
+                        chunk = await process.stderr.read(64)
+                        if not chunk:
+                            break
+                        decoded = chunk.decode("utf-8", errors="replace")
+                        stderr_chunks.append(decoded)
+                        await self.ws_manager.send_stream(self.module_id, decoded)
 
             # Run both streams concurrently and wait for process
             await asyncio.gather(stream_stdout(), stream_stderr(), process.wait())
@@ -114,7 +116,7 @@ class AnalysisModule(ABC):
             # Generate summary
             stdout_str = "".join(stdout_chunks)
             stderr_str = "".join(stderr_chunks)
-            summary = self.get_summary(stdout_str, stderr_str, self.exit_code)
+            summary = self.get_summary(stdout_str, stderr_str, self.exit_code or 1)
 
             # Send END message
             await self.ws_manager.send_end(self.module_id, self.status, summary)

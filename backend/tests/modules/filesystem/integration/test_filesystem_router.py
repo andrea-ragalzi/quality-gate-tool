@@ -1,4 +1,5 @@
-from unittest.mock import AsyncMock
+from typing import Generator
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from fastapi.testclient import TestClient
@@ -8,21 +9,21 @@ from app.modules.filesystem.infrastructure.web.router import get_filesystem_serv
 
 
 @pytest.fixture
-def mock_service():
+def mock_service() -> MagicMock:
     service = AsyncMock()
     service.list_files.return_value = ["file1.txt", "dir1"]
     return service
 
 
 @pytest.fixture
-def client(mock_service):
+def client(mock_service: MagicMock) -> Generator[TestClient, None, None]:
     app.dependency_overrides[get_filesystem_service] = lambda: mock_service
     with TestClient(app) as client:
         yield client
     app.dependency_overrides.clear()
 
 
-def test_list_files_success(client, mock_service):
+def test_list_files_success(client: TestClient, mock_service: MagicMock):
     response = client.get("/api/v1/fs/?path=/tmp")
 
     assert response.status_code == 200
@@ -30,7 +31,7 @@ def test_list_files_success(client, mock_service):
     mock_service.list_files.assert_called_once_with("/tmp")
 
 
-def test_list_files_error(client, mock_service):
+def test_list_files_error(client: TestClient, mock_service: MagicMock):
     mock_service.list_files.side_effect = ValueError("Invalid path")
 
     response = client.get("/api/v1/fs/?path=/invalid")
@@ -39,7 +40,7 @@ def test_list_files_error(client, mock_service):
     assert response.json() == {"detail": "Invalid path"}
 
 
-def test_list_files_detailed_success(client, mock_service):
+def test_list_files_detailed_success(client: TestClient, mock_service: MagicMock):
     mock_service.list_files_detailed.return_value = [
         {"name": "file1.txt", "is_dir": False},
         {"name": "dir1", "is_dir": True},
@@ -54,7 +55,7 @@ def test_list_files_detailed_success(client, mock_service):
     mock_service.list_files_detailed.assert_called_once_with("/tmp")
 
 
-def test_list_files_detailed_error(client, mock_service):
+def test_list_files_detailed_error(client: TestClient, mock_service: MagicMock):
     mock_service.list_files_detailed.side_effect = ValueError("Invalid path")
 
     response = client.post("/api/v1/fs/list", json={"path": "/invalid"})

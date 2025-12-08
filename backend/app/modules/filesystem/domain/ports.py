@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List
+from typing import Any, Dict, List
 
 
 class FilesystemPort(ABC):
@@ -8,7 +8,7 @@ class FilesystemPort(ABC):
         pass  # pragma: no cover
 
     @abstractmethod
-    async def list_directory_details(self, path: str) -> List[dict]:
+    async def list_directory_details(self, path: str) -> List[Dict[str, Any]]:
         pass  # pragma: no cover
 
     @abstractmethod

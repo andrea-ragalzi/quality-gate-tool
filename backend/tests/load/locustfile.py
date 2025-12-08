@@ -1,3 +1,4 @@
+# pyright: reportUnknownVariableType=none
 from locust import HttpUser, between, task
 
 

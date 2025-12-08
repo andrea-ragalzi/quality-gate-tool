@@ -7,12 +7,12 @@ from app.modules.analysis.domain.ports import AnalysisNotifierPort
 
 
 @pytest.fixture
-def mock_notifier():
+def mock_notifier() -> MagicMock:
     return AsyncMock(spec=AnalysisNotifierPort)
 
 
 @pytest.mark.asyncio
-async def test_get_modified_files_incremental_success(mock_notifier):
+async def test_get_modified_files_incremental_success(mock_notifier: MagicMock):
     # Arrange
     orchestrator = AnalysisOrchestrator(
         project_path="/tmp/test", mode="incremental", ws_manager=mock_notifier
@@ -33,7 +33,7 @@ async def test_get_modified_files_incremental_success(mock_notifier):
 
 
 @pytest.mark.asyncio
-async def test_get_modified_files_not_incremental(mock_notifier):
+async def test_get_modified_files_not_incremental(mock_notifier: MagicMock):
     # Arrange
     orchestrator = AnalysisOrchestrator(
         project_path="/tmp/test", mode="full", ws_manager=mock_notifier
@@ -47,7 +47,7 @@ async def test_get_modified_files_not_incremental(mock_notifier):
 
 
 @pytest.mark.asyncio
-async def test_get_modified_files_git_failure(mock_notifier):
+async def test_get_modified_files_git_failure(mock_notifier: MagicMock):
     # Arrange
     orchestrator = AnalysisOrchestrator(
         project_path="/tmp/test", mode="incremental", ws_manager=mock_notifier
@@ -67,7 +67,7 @@ async def test_get_modified_files_git_failure(mock_notifier):
 
 
 @pytest.mark.asyncio
-async def test_get_modified_files_exception(mock_notifier):
+async def test_get_modified_files_exception(mock_notifier: MagicMock):
     # Arrange
     orchestrator = AnalysisOrchestrator(
         project_path="/tmp/test", mode="incremental", ws_manager=mock_notifier
@@ -82,7 +82,7 @@ async def test_get_modified_files_exception(mock_notifier):
 
 
 @pytest.mark.asyncio
-async def test_execute_full_success(mock_notifier):
+async def test_execute_full_success(mock_notifier: MagicMock):
     # Arrange
     orchestrator = AnalysisOrchestrator(
         project_path="/tmp/test", mode="full", ws_manager=mock_notifier
@@ -102,7 +102,7 @@ async def test_execute_full_success(mock_notifier):
 
 
 @pytest.mark.asyncio
-async def test_execute_incremental_with_files(mock_notifier):
+async def test_execute_incremental_with_files(mock_notifier: MagicMock):
     # Arrange
     orchestrator = AnalysisOrchestrator(
         project_path="/tmp/test", mode="incremental", ws_manager=mock_notifier
@@ -124,7 +124,7 @@ async def test_execute_incremental_with_files(mock_notifier):
 
 
 @pytest.mark.asyncio
-async def test_execute_failure(mock_notifier):
+async def test_execute_failure(mock_notifier: MagicMock):
     # Arrange
     orchestrator = AnalysisOrchestrator(
         project_path="/tmp/test", mode="full", ws_manager=mock_notifier
@@ -143,7 +143,7 @@ async def test_execute_failure(mock_notifier):
 
 
 @pytest.mark.asyncio
-async def test_calculate_final_status(mock_notifier):
+async def test_calculate_final_status(mock_notifier: MagicMock):
     orchestrator = AnalysisOrchestrator(
         project_path="/tmp/test", mode="full", ws_manager=mock_notifier
     )
@@ -154,7 +154,7 @@ async def test_calculate_final_status(mock_notifier):
 
 
 @pytest.mark.asyncio
-async def test_run_parallel_modules(mock_notifier):
+async def test_run_parallel_modules(mock_notifier: MagicMock):
     # Arrange
     orchestrator = AnalysisOrchestrator(
         project_path="/tmp/test",
@@ -181,7 +181,7 @@ async def test_run_parallel_modules(mock_notifier):
 
 
 @pytest.mark.asyncio
-async def test_run_parallel_modules_exception(mock_notifier):
+async def test_run_parallel_modules_exception(mock_notifier: MagicMock):
     # Arrange
     orchestrator = AnalysisOrchestrator(
         project_path="/tmp/test",

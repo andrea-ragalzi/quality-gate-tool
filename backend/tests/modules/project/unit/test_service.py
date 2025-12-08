@@ -1,4 +1,4 @@
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
@@ -8,19 +8,22 @@ from app.modules.project.domain.ports import ProjectRepositoryPort
 
 
 @pytest.fixture
-def mock_repo():
+def mock_repo() -> MagicMock:
     return AsyncMock(spec=ProjectRepositoryPort)
 
 
 @pytest.fixture
-def service(mock_repo):
+def service(mock_repo: MagicMock) -> ProjectService:
     return ProjectService(mock_repo)
 
 
 @pytest.mark.asyncio
-async def test_create_project(service, mock_repo):
+async def test_create_project(service: ProjectService, mock_repo: MagicMock):
     # Arrange
-    mock_repo.save.side_effect = lambda p: p
+    def return_project(p: Project) -> Project:
+        return p
+
+    mock_repo.save.side_effect = return_project
 
     # Act
     project = await service.create_project("My Project", "/tmp/my-project")
@@ -33,7 +36,7 @@ async def test_create_project(service, mock_repo):
 
 
 @pytest.mark.asyncio
-async def test_list_projects(service, mock_repo):
+async def test_list_projects(service: ProjectService, mock_repo: MagicMock):
     # Arrange
     mock_repo.get_all.return_value = [
         Project(id="p1", name="P1", path="/p1"),

@@ -1,3 +1,5 @@
+from typing import Any, Dict, List
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -76,7 +78,7 @@ async def health_check():
 
 
 @app.get("/api/list-projects")
-async def list_projects_legacy(path: str = "/home"):
+async def list_projects_legacy(path: str = "/home") -> Dict[str, List[Any]]:
     """
     Legacy endpoint for listing projects.
     Currently returns empty list as frontend logic is disabled.

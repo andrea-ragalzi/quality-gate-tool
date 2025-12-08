@@ -51,6 +51,7 @@ export default function Home() {
     overallStatus,
     isAnalyzing,
     isWatching,
+    lastSystemMessage,
     startAnalysis,
     stopWatch,
   } = useAnalysisViewModel();
@@ -136,6 +137,9 @@ export default function Home() {
   };
 
   const getStatusText = () => {
+    if (isAnalyzing) return "ANALYSIS IN PROGRESS...";
+    if (isWatching) return "LIVE WATCH ACTIVE";
+
     switch (overallStatus) {
       case "WATCHING":
         return "LIVE WATCH MODE ACTIVE...";
@@ -222,6 +226,16 @@ export default function Home() {
               <Text size="md" className="dashboard__status-box--text">
                 {getStatusText()}
               </Text>
+              {lastSystemMessage && (
+                <Text
+                  size="xs"
+                  c="dimmed"
+                  mt={4}
+                  style={{ fontFamily: "monospace", opacity: 0.7 }}
+                >
+                  {">"} {lastSystemMessage}
+                </Text>
+              )}
             </div>
 
             {/* Project Path */}

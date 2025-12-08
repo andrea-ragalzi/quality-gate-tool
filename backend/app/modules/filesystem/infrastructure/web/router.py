@@ -1,4 +1,4 @@
-from typing import List
+from typing import Any, Dict, List
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -21,7 +21,7 @@ async def get_filesystem_service() -> FilesystemService:
 async def list_files_detailed(
     request: ListFilesRequest,
     service: FilesystemService = Depends(get_filesystem_service),
-):
+) -> Dict[str, Any]:
     try:
         return await service.list_files_detailed(request.path)
     except ValueError as e:

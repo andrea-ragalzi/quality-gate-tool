@@ -6,9 +6,10 @@ Prevents resource exhaustion through controlled event handling
 
 import asyncio
 import logging
+import threading
 from concurrent.futures import Future
 from pathlib import Path
-from typing import Optional, Set
+from typing import Any, Callable, Coroutine, List, Optional, Set
 
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers.polling import PollingObserver
@@ -25,58 +26,75 @@ class CodeChangeHandler(FileSystemEventHandler):
     Prevents rapid-fire analysis triggers that cause RAM exhaustion
     """
 
-    def __init__(self, project_path: str, callback, loop: asyncio.AbstractEventLoop):
+    def __init__(
+        self,
+        project_path: str,
+        callback: Callable[[List[str]], Coroutine[Any, Any, None]],
+        loop: asyncio.AbstractEventLoop,
+    ):
         self.project_path = Path(project_path)
         self.callback = callback
         self.loop = loop  # Store event loop reference from main thread
         self.modified_files: Set[str] = set()
-        self.debounce_task: Optional[Future] = None  # Future from run_coroutine_threadsafe
+        self._lock = threading.Lock()  # Thread safety for shared state
+        self.debounce_task: Optional[Future[Any]] = None  # Future from run_coroutine_threadsafe
         # CRITICAL: Debounce delay to ensure file write completion
         self.debounce_delay = 0.1  # 100ms debounce as per briefing
         self.is_analyzing = False  # Prevent overlapping analysis runs
 
-    def on_modified(self, event):
+    def on_modified(self, event: Any):
         logger.debug(
             f"🔍 Watchdog detected modification: {event.src_path} (is_dir: {event.is_directory})"
         )
         if event.is_directory:
             return
-        self._handle_change(event.src_path)
+        path: Any = event.src_path
+        if isinstance(path, bytes):
+            path = path.decode("utf-8")
+        self._handle_change(str(path))
 
-    def on_created(self, event):
+    def on_created(self, event: Any):
         logger.debug(
             f"🔍 Watchdog detected creation: {event.src_path} (is_dir: {event.is_directory})"
         )
         if event.is_directory:
             return
-        self._handle_change(event.src_path)
+        path: Any = event.src_path
+        if isinstance(path, bytes):
+            path = path.decode("utf-8")
+        self._handle_change(str(path))
 
     def _handle_change(self, file_path: str):
         """Track file change and schedule debounced analysis"""
-        # CRITICAL: Skip if analysis is already running
-        if self.is_analyzing:
-            logger.debug(f"⏳ Analysis in progress, queuing: {file_path}")
-            return
-
         # Filter relevant files only
         if self._is_relevant_file(file_path):
             try:
                 rel_path = str(Path(file_path).relative_to(self.project_path))
-                self.modified_files.add(rel_path)
-                logger.info(f"📝 File changed: {rel_path}")
 
-                # Cancel previous debounce task
-                if self.debounce_task and not self.debounce_task.done():
-                    self.debounce_task.cancel()
+                with self._lock:
+                    self.modified_files.add(rel_path)
+                    logger.info(f"📝 File changed: {rel_path}")
 
-                # CRITICAL: Use stored loop reference instead of get_event_loop()
-                # This works because watchdog runs in a separate thread
-                self.debounce_task = asyncio.run_coroutine_threadsafe(
-                    self._debounced_analysis(), self.loop
-                )
+                    # If analysis is running, we just queue the file (it's already in modified_files)
+                    # The running _debounced_analysis loop will pick it up.
+                    if self.is_analyzing:
+                        logger.debug(f"⏳ Analysis in progress, queuing change for: {rel_path}")
+                        return
+
+                    # Cancel previous debounce task if it's just waiting
+                    if self.debounce_task and not self.debounce_task.done():
+                        self.debounce_task.cancel()
+
+                    # CRITICAL: Use stored loop reference instead of get_event_loop()
+                    # This works because watchdog runs in a separate thread
+                    self.debounce_task = asyncio.run_coroutine_threadsafe(
+                        self._debounced_analysis(), self.loop
+                    )
             except ValueError:
                 # File is outside project path
                 pass
+        else:
+            logger.debug(f"🗑️ File ignored: {file_path}")
 
     def _is_relevant_file(self, file_path: str) -> bool:
         """
@@ -124,7 +142,14 @@ class CodeChangeHandler(FileSystemEventHandler):
         path = Path(file_path)
 
         # Check if in ignored directory
-        for part in path.parts:
+        # CRITICAL: Check relative path parts to avoid false positives from parent directories (e.g. /tmp)
+        try:
+            check_parts = path.relative_to(self.project_path).parts
+        except ValueError:
+            # Fallback to full path if not relative (should not happen for relevant files)
+            check_parts = path.parts
+
+        for part in check_parts:
             if part in ignore_patterns:
                 return False
             # Also check for hidden files
@@ -133,31 +158,52 @@ class CodeChangeHandler(FileSystemEventHandler):
 
         return path.suffix in relevant_extensions
 
-    async def _debounced_analysis(self):
+    async def _debounced_analysis(self) -> None:
         """
         CRITICAL: Wait for debounce delay before triggering analysis
-        Ensures file write is complete and groups rapid saves
+        Ensures file write is complete and groups rapid saves.
+        Loops to handle changes that occurred during analysis.
         """
         try:
+            # Initial debounce
             await asyncio.sleep(self.debounce_delay)
 
-            if self.modified_files and not self.is_analyzing:
-                self.is_analyzing = True
-                files = list(self.modified_files)
-                self.modified_files.clear()
+            while True:
+                files = []
+                with self._lock:
+                    if not self.modified_files:
+                        break
+
+                    # If we are already analyzing (should not happen here due to logic, but safety)
+                    if self.is_analyzing:
+                        break
+
+                    files = list(self.modified_files)
+                    self.modified_files.clear()
+                    self.is_analyzing = True
+
+                if not files:
+                    break
 
                 logger.info(f"🔄 Triggering incremental analysis for {len(files)} file(s)")
                 try:
                     await self.callback(files)
                 finally:
-                    self.is_analyzing = False
-                    logger.info("✅ Analysis complete, ready for next trigger")
+                    with self._lock:
+                        self.is_analyzing = False
+                    logger.info("✅ Analysis complete")
+
+                # Small pause to allow batching of pending changes
+                if self.modified_files:
+                    logger.info("🔄 Pending changes detected, re-triggering analysis...")
+                    await asyncio.sleep(self.debounce_delay)
 
         except asyncio.CancelledError:
             logger.debug("Debounce cancelled, new change detected")
         except Exception as e:
             logger.error(f"Analysis failed: {e}")
-            self.is_analyzing = False
+            with self._lock:
+                self.is_analyzing = False
 
 
 class WatchManager:
@@ -178,7 +224,7 @@ class WatchManager:
         self.observer: Optional[PollingObserver] = None
         self.is_running = False
         self.stop_event = asyncio.Event()
-        self.active_analysis_task: Optional[asyncio.Task] = None
+        self.active_analysis_task: Optional[asyncio.Task[Any]] = None
 
     async def start_watching(self):
         """Start live watch mode"""
@@ -283,7 +329,7 @@ class WatchManager:
 
         logger.info("✅ Watch mode stopped")
 
-    async def _run_analysis(self, files: list):
+    async def _run_analysis(self, files: List[str]):
         """Callback to run incremental analysis"""
         try:
             self.active_analysis_task = asyncio.current_task()
@@ -302,8 +348,8 @@ class WatchManager:
                 selected_tools=self.selected_tools,
             )
 
-            # Execute analysis
-            result = await orchestrator.execute()
+            # Execute analysis with explicit file list
+            result = await orchestrator.execute(files=files)
 
             logger.info(f"✅ Auto-analysis completed: {result.get('status')}")
 

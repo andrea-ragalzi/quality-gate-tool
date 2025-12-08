@@ -14,6 +14,7 @@ export const useAnalysisViewModel = () => {
     moduleLogs: {},
     isAnalyzing: false,
     isWatching: false,
+    lastSystemMessage: "",
   });
 
   // Initialize logs
@@ -34,6 +35,16 @@ export const useAnalysisViewModel = () => {
   const handleMessage = useCallback((data: any) => {
     setState((prev) => {
       const newState = { ...prev };
+
+      // 0. Global System Logs
+      if (
+        data.type === "LOG" &&
+        !data.module &&
+        !data.moduleId &&
+        !data.module_id
+      ) {
+        newState.lastSystemMessage = data.message || data.data;
+      }
 
       // 1. Module Specific Updates
       if (data.module || data.moduleId || data.module_id) {
