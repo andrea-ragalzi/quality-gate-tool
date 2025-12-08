@@ -80,9 +80,12 @@ export const useAnalysisViewModel = () => {
           mod.status = "RUNNING";
           mod.logs = ["Analysis started..."];
           mod.fullLog = "Analysis started...\n";
+          mod.metrics = undefined; // Reset metrics on new run
         } else if (data.type === "END") {
           mod.status = data.status === "PASS" ? "PASS" : "FAIL";
           mod.summary = data.summary;
+        } else if (data.type === "METRICS") {
+          mod.metrics = data.data;
         }
 
         newState.moduleLogs = { ...newState.moduleLogs, [moduleId]: mod };

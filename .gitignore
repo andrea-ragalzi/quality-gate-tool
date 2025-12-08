@@ -77,3 +77,4 @@ report-data.json
 # Docker
 .dockerignore
 frontend/playwright-report/
+*.tsbuildinfo

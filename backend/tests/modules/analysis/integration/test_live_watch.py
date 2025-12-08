@@ -48,9 +48,7 @@ async def test_live_watch_real_filesystem(tmp_path: Path):
     # in this test, we just want to know they WOULD be triggered.
     # We also patch PollingObserver to use the native Observer (inotify) which is faster/more reliable for local tests
     with (
-        patch(
-            "app.modules.analysis.infrastructure.adapters.file_watcher.AnalysisOrchestrator"
-        ) as MockOrchestrator,
+        patch("app.modules.analysis.infrastructure.adapters.file_watcher.AnalysisOrchestrator") as MockOrchestrator,
         patch.object(CodeChangeHandler, "__init__", fast_init),
         patch(
             "app.modules.analysis.infrastructure.adapters.file_watcher.PollingObserver",

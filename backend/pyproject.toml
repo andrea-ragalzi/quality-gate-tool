@@ -34,58 +34,61 @@ locust = "^2.32.0"
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
-# ============================================================================
-# RUFF CONFIGURATION (Linting & Formatting)
-# ============================================================================
+# =========================================================================
+# pyproject.toml: Unified Python Configuration
+# RUFF, PYRIGHT, LIZARD
+# =========================================================================
+
+# --- [tool.lizard] ---
+# 0. CYCLOMATIC COMPLEXITY (SOLE CHECKER)
+# Lizard is the designated tool for Cyclomatic Complexity (CCN).
+# We enforce a maximum CCN of 15.
+# Note: Lizard does not natively read from pyproject.toml, but this serves as
+# the single source of truth for documentation.
+# Run with: lizard . -C 15
+
+# --- [tool.ruff] ---
+# 1. GENERAL LINTING, FORMATTING & IMPORT SORTING
+# Goal: Maximum code cleanliness and adherence to PEP8.
+# - Line Length: 120 (Matches ESLint)
+# - Import Sorting: Enabled (I) - Sole checker
+# - Complexity: Disabled (C901) - Handled by Lizard
+
 [tool.ruff]
-line-length = 100
+line-length = 120
 target-version = "py312"
+exclude = [".venv", ".git", "__pycache__", "migrations", "build", "docs"]
 
 [tool.ruff.lint]
-# Enable:
-# E: pycodestyle errors
-# F: Pyflakes
-# I: isort (imports)
-# B: flake8-bugbear
-select = ["E", "F", "I", "B"]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort (Import Sorting - Sole Checker)
+    "B",   # flake8-bugbear
+    "UP",  # pyupgrade
+    "ANN", # flake8-annotations
+]
+ignore = [
+    "C901",   # Disabled: Cyclomatic complexity is handled by Lizard
+    "ANN101", # Missing type annotation for self
+    "ANN102", # Missing type annotation for cls
+]
 
-# Ignore:
-# E501: Line too long (handled by formatter)
-# B008: Do not perform function call `Depends` in argument defaults (FastAPI dependency injection)
-# B904: Within an `except` clause, raise exceptions with `raise ... from err`
-ignore = ["E501", "B008", "B904"]
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["ANN"]
 
 [tool.ruff.format]
-quote-style = "double"
-indent-style = "space"
-skip-magic-trailing-comma = false
-line-ending = "auto"
+docstring-code-format = true
 
-# ============================================================================
-# PYRIGHT CONFIGURATION (Type Checking)
-# ============================================================================
+# --- [tool.pyright] ---
+# 2. STATIC TYPE CHECKING
+# Goal: Maximum type safety.
+# - Import Sorting: Disabled (Handled by Ruff)
+
 [tool.pyright]
-include = ["app", "tests"]
-venvPath = "."
-venv = ".venv"
 typeCheckingMode = "strict"
-pythonVersion = "3.12"
-extraPaths = ["."]
-
-# Enable unused import reporting
+reportMissingTypeStubs = true
+reportPrivateUsage = false
 reportUnusedImport = true
-
-[[tool.pyright.executionEnvironments]]
-root = "tests"
-reportMissingImports = "none"
-reportMissingTypeStubs = "none"
-
-# ============================================================================
-# LIZARD CONFIGURATION (Complexity)
-# ============================================================================
-# Lizard configuration is typically passed via CLI args, but we document it here:
-# Threshold: 15
-# Excludes: venv, .venv, env, node_modules, .next
-
-[tool.coverage.run]
-omit = ["*/__init__.py"]
+exclude = [".venv", "venv", "**/__pycache__", "htmlcov", "reports", "data"]

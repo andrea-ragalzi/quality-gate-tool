@@ -70,12 +70,8 @@ async def test_watch_manager_start_watching():
 
     # Mock PollingObserver
     with (
-        patch(
-            "app.modules.analysis.infrastructure.adapters.file_watcher.PollingObserver"
-        ) as MockObserver,
-        patch(
-            "app.modules.analysis.infrastructure.adapters.file_watcher.AnalysisOrchestrator"
-        ) as MockOrchestrator,
+        patch("app.modules.analysis.infrastructure.adapters.file_watcher.PollingObserver") as MockObserver,
+        patch("app.modules.analysis.infrastructure.adapters.file_watcher.AnalysisOrchestrator") as MockOrchestrator,
     ):
         mock_observer = MagicMock()
         MockObserver.return_value = mock_observer
@@ -165,9 +161,7 @@ async def test_run_analysis_callback():
     ws_manager = AsyncMock()
     manager = WatchManager("/tmp/test", ws_manager)
 
-    with patch(
-        "app.modules.analysis.infrastructure.adapters.file_watcher.AnalysisOrchestrator"
-    ) as MockOrchestrator:
+    with patch("app.modules.analysis.infrastructure.adapters.file_watcher.AnalysisOrchestrator") as MockOrchestrator:
         mock_orchestrator = AsyncMock()
         MockOrchestrator.return_value = mock_orchestrator
         mock_orchestrator.execute.return_value = {"status": "PASS"}
@@ -187,9 +181,7 @@ async def test_run_analysis_exception():
     ws_manager = AsyncMock()
     manager = WatchManager("/tmp/test", ws_manager)
 
-    with patch(
-        "app.modules.analysis.infrastructure.adapters.file_watcher.AnalysisOrchestrator"
-    ) as MockOrchestrator:
+    with patch("app.modules.analysis.infrastructure.adapters.file_watcher.AnalysisOrchestrator") as MockOrchestrator:
         mock_orchestrator = AsyncMock()
         MockOrchestrator.return_value = mock_orchestrator
         mock_orchestrator.execute.side_effect = Exception("Analysis Crash")
@@ -201,9 +193,7 @@ async def test_run_analysis_exception():
         ws_manager.broadcast_raw.assert_called()
         # Verify error message was broadcasted
         # We can check the last call or search in calls
-        error_calls = [
-            call for call in ws_manager.broadcast_raw.call_args_list if "ERROR" in str(call)
-        ]
+        error_calls = [call for call in ws_manager.broadcast_raw.call_args_list if "ERROR" in str(call)]
         assert len(error_calls) > 0
 
 
@@ -250,12 +240,8 @@ async def test_watch_manager_integration_flow():
     manager = WatchManager("/tmp/test", ws_manager)
 
     with (
-        patch(
-            "app.modules.analysis.infrastructure.adapters.file_watcher.PollingObserver"
-        ) as MockObserver,
-        patch(
-            "app.modules.analysis.infrastructure.adapters.file_watcher.AnalysisOrchestrator"
-        ) as MockOrchestrator,
+        patch("app.modules.analysis.infrastructure.adapters.file_watcher.PollingObserver") as MockObserver,
+        patch("app.modules.analysis.infrastructure.adapters.file_watcher.AnalysisOrchestrator") as MockOrchestrator,
     ):
         mock_observer = MockObserver.return_value
         mock_orchestrator = MockOrchestrator.return_value

@@ -66,6 +66,4 @@ async def test_scoped_notifier_send_global_end():
     await scoped_notifier.send_global_end(status)
 
     # Assert
-    mock_notifier.send_update.assert_called_once_with(
-        project_id, {"type": "GLOBAL_END", "status": status}
-    )
+    mock_notifier.send_update.assert_called_once_with(project_id, {"type": "GLOBAL_END", "status": status})

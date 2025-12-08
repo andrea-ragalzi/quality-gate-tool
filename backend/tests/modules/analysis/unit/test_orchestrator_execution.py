@@ -14,9 +14,7 @@ def mock_notifier() -> MagicMock:
 @pytest.mark.asyncio
 async def test_get_modified_files_incremental_success(mock_notifier: MagicMock):
     # Arrange
-    orchestrator = AnalysisOrchestrator(
-        project_path="/tmp/test", mode="incremental", ws_manager=mock_notifier
-    )
+    orchestrator = AnalysisOrchestrator(project_path="/tmp/test", mode="incremental", ws_manager=mock_notifier)
 
     # Mock subprocess
     mock_process = AsyncMock()
@@ -35,9 +33,7 @@ async def test_get_modified_files_incremental_success(mock_notifier: MagicMock):
 @pytest.mark.asyncio
 async def test_get_modified_files_not_incremental(mock_notifier: MagicMock):
     # Arrange
-    orchestrator = AnalysisOrchestrator(
-        project_path="/tmp/test", mode="full", ws_manager=mock_notifier
-    )
+    orchestrator = AnalysisOrchestrator(project_path="/tmp/test", mode="full", ws_manager=mock_notifier)
 
     # Act
     files = await orchestrator.get_modified_files()
@@ -49,9 +45,7 @@ async def test_get_modified_files_not_incremental(mock_notifier: MagicMock):
 @pytest.mark.asyncio
 async def test_get_modified_files_git_failure(mock_notifier: MagicMock):
     # Arrange
-    orchestrator = AnalysisOrchestrator(
-        project_path="/tmp/test", mode="incremental", ws_manager=mock_notifier
-    )
+    orchestrator = AnalysisOrchestrator(project_path="/tmp/test", mode="incremental", ws_manager=mock_notifier)
 
     # Mock subprocess failure
     mock_process = AsyncMock()
@@ -69,9 +63,7 @@ async def test_get_modified_files_git_failure(mock_notifier: MagicMock):
 @pytest.mark.asyncio
 async def test_get_modified_files_exception(mock_notifier: MagicMock):
     # Arrange
-    orchestrator = AnalysisOrchestrator(
-        project_path="/tmp/test", mode="incremental", ws_manager=mock_notifier
-    )
+    orchestrator = AnalysisOrchestrator(project_path="/tmp/test", mode="incremental", ws_manager=mock_notifier)
 
     with patch("asyncio.create_subprocess_exec", side_effect=Exception("Boom")):
         # Act
@@ -84,9 +76,7 @@ async def test_get_modified_files_exception(mock_notifier: MagicMock):
 @pytest.mark.asyncio
 async def test_execute_full_success(mock_notifier: MagicMock):
     # Arrange
-    orchestrator = AnalysisOrchestrator(
-        project_path="/tmp/test", mode="full", ws_manager=mock_notifier
-    )
+    orchestrator = AnalysisOrchestrator(project_path="/tmp/test", mode="full", ws_manager=mock_notifier)
 
     # Mock run_parallel_modules
     orchestrator.run_parallel_modules = AsyncMock(return_value={"mod1": "PASS", "mod2": "PASS"})
@@ -104,9 +94,7 @@ async def test_execute_full_success(mock_notifier: MagicMock):
 @pytest.mark.asyncio
 async def test_execute_incremental_with_files(mock_notifier: MagicMock):
     # Arrange
-    orchestrator = AnalysisOrchestrator(
-        project_path="/tmp/test", mode="incremental", ws_manager=mock_notifier
-    )
+    orchestrator = AnalysisOrchestrator(project_path="/tmp/test", mode="incremental", ws_manager=mock_notifier)
 
     # Mock get_modified_files
     orchestrator.get_modified_files = AsyncMock(return_value=["file1.py"])
@@ -126,9 +114,7 @@ async def test_execute_incremental_with_files(mock_notifier: MagicMock):
 @pytest.mark.asyncio
 async def test_execute_failure(mock_notifier: MagicMock):
     # Arrange
-    orchestrator = AnalysisOrchestrator(
-        project_path="/tmp/test", mode="full", ws_manager=mock_notifier
-    )
+    orchestrator = AnalysisOrchestrator(project_path="/tmp/test", mode="full", ws_manager=mock_notifier)
 
     # Mock run_parallel_modules to raise exception
     orchestrator.run_parallel_modules = AsyncMock(side_effect=Exception("Crash"))
@@ -144,9 +130,7 @@ async def test_execute_failure(mock_notifier: MagicMock):
 
 @pytest.mark.asyncio
 async def test_calculate_final_status(mock_notifier: MagicMock):
-    orchestrator = AnalysisOrchestrator(
-        project_path="/tmp/test", mode="full", ws_manager=mock_notifier
-    )
+    orchestrator = AnalysisOrchestrator(project_path="/tmp/test", mode="full", ws_manager=mock_notifier)
 
     assert orchestrator.calculate_final_status({"m1": "PASS", "m2": "PASS"}) == "PASS"
     assert orchestrator.calculate_final_status({"m1": "PASS", "m2": "FAIL"}) == "FAIL"

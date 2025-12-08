@@ -27,9 +27,7 @@ async def test_start_analysis_watch_mode(mock_websocket_notifier: MagicMock):
         MockWatchManager.return_value = mock_watcher
 
         # Act
-        result = await service.start_analysis(
-            project_id=project_id, project_path=project_path, mode=mode
-        )
+        result = await service.start_analysis(project_id=project_id, project_path=project_path, mode=mode)
 
         # Assert
         assert result["status"] == "started"
@@ -52,9 +50,7 @@ async def test_start_analysis_full_mode(mock_websocket_notifier: MagicMock):
     mode = "full"
 
     # Mock AnalysisOrchestrator
-    with patch(
-        "app.modules.analysis.application.services.AnalysisOrchestrator"
-    ) as MockOrchestrator:
+    with patch("app.modules.analysis.application.services.AnalysisOrchestrator") as MockOrchestrator:
         mock_orchestrator_instance = AsyncMock()
         MockOrchestrator.return_value = mock_orchestrator_instance
         mock_orchestrator_instance.execute.return_value = {"status": "completed"}
@@ -73,16 +69,12 @@ async def test_start_analysis_full_mode_execution(mock_websocket_notifier: Magic
     service = AnalysisOrchestratorService(notifier=mock_websocket_notifier)
 
     # Mock AnalysisOrchestrator
-    with patch(
-        "app.modules.analysis.application.services.AnalysisOrchestrator"
-    ) as MockOrchestrator:
+    with patch("app.modules.analysis.application.services.AnalysisOrchestrator") as MockOrchestrator:
         mock_orchestrator_instance = AsyncMock()
         MockOrchestrator.return_value = mock_orchestrator_instance
         mock_orchestrator_instance.execute.return_value = {"status": "completed"}
 
-        await service.start_analysis(
-            project_id="test_project", project_path="/tmp/test", mode="full"
-        )
+        await service.start_analysis(project_id="test_project", project_path="/tmp/test", mode="full")
 
         # Verify Orchestrator was initialized and run
         MockOrchestrator.assert_called_once()

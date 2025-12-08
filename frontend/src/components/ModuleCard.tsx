@@ -9,6 +9,7 @@ import {
   IconCopy,
   IconChevronDown,
 } from "@tabler/icons-react";
+import { Metrics } from "@/features/analysis/types";
 
 interface ModuleCardProps {
   moduleId: string;
@@ -18,6 +19,7 @@ interface ModuleCardProps {
   status: "PENDING" | "RUNNING" | "PASS" | "FAIL";
   logs: string[];
   summary?: string;
+  metrics?: Metrics;
   onViewLog: () => void;
 }
 
@@ -29,6 +31,7 @@ export default function ModuleCard({
   status,
   logs,
   summary,
+  metrics,
   onViewLog,
 }: ModuleCardProps) {
   const rainContainerRef = useRef<HTMLDivElement>(null);
@@ -113,6 +116,51 @@ export default function ModuleCard({
 
   const hasContent = summary || logs.length > 0;
 
+  const getVisibleMetrics = () => {
+    switch (moduleId) {
+      case "B_Lizard":
+        return ["COMPLEXITY"];
+      case "F_TypeScript":
+      case "B_Ruff":
+      case "B_Pyright":
+        return ["ERROR", "WARNING", "INFO"];
+      case "F_ESLint":
+        return ["ERROR", "WARNING"];
+      default:
+        return ["ERROR", "WARNING", "INFO", "COMPLEXITY"];
+    }
+  };
+
+  const visibleMetrics = getVisibleMetrics();
+
+  const getCompactMetrics = () => {
+    if (!metrics) return null;
+
+    const items = [];
+    const { total_issues } = metrics;
+
+    if (visibleMetrics.includes("ERROR") && total_issues.ERROR > 0) {
+      items.push({ label: `${total_issues.ERROR}E`, color: "#ff4d4d" });
+    }
+    if (visibleMetrics.includes("WARNING") && total_issues.WARNING > 0) {
+      items.push({ label: `${total_issues.WARNING}W`, color: "#ffd700" });
+    }
+    if (visibleMetrics.includes("INFO") && total_issues.INFO > 0) {
+      items.push({ label: `${total_issues.INFO}I`, color: "#4da6ff" });
+    }
+    if (visibleMetrics.includes("COMPLEXITY") && total_issues.COMPLEXITY > 0) {
+      items.push({ label: `${total_issues.COMPLEXITY}C`, color: "#ff66ff" });
+    }
+
+    if (items.length === 0) {
+      return [{ label: "No issues found", color: "#4caf50" }];
+    }
+
+    return items;
+  };
+
+  const compactMetrics = getCompactMetrics();
+
   return (
     <div
       className={`module-card module-card--${status.toLowerCase()} ${
@@ -140,10 +188,28 @@ export default function ModuleCard({
                 ? "FAILED"
                 : status}
           </div>
-          {summary && (
-            <div className="module-card__issue-count">
-              {summary.replace(/^[❌✅⚠️]\s*/u, "")}
+          {compactMetrics ? (
+            <div
+              className="module-card__issue-count"
+              style={{
+                fontWeight: "bold",
+                marginTop: "2px",
+                display: "flex",
+                gap: "8px",
+              }}
+            >
+              {compactMetrics.map((item, idx) => (
+                <span key={idx} style={{ color: item.color }}>
+                  {item.label}
+                </span>
+              ))}
             </div>
+          ) : (
+            summary && (
+              <div className="module-card__issue-count">
+                {summary.replace(/^[❌✅⚠️]\s*/u, "")}
+              </div>
+            )
           )}
           {hasContent && (
             <IconChevronDown

@@ -7,11 +7,12 @@ Prevents resource exhaustion through controlled event handling
 import asyncio
 import logging
 import threading
+from collections.abc import Callable, Coroutine
 from concurrent.futures import Future
 from pathlib import Path
-from typing import Any, Callable, Coroutine, List, Optional, Set
+from typing import Any
 
-from watchdog.events import FileSystemEventHandler
+from watchdog.events import FileSystemEvent, FileSystemEventHandler
 from watchdog.observers.polling import PollingObserver
 
 from ...application.engine.orchestrator import AnalysisOrchestrator
@@ -29,23 +30,21 @@ class CodeChangeHandler(FileSystemEventHandler):
     def __init__(
         self,
         project_path: str,
-        callback: Callable[[List[str]], Coroutine[Any, Any, None]],
+        callback: Callable[[list[str]], Coroutine[Any, Any, None]],
         loop: asyncio.AbstractEventLoop,
-    ):
+    ) -> None:
         self.project_path = Path(project_path)
         self.callback = callback
         self.loop = loop  # Store event loop reference from main thread
-        self.modified_files: Set[str] = set()
+        self.modified_files: set[str] = set()
         self._lock = threading.Lock()  # Thread safety for shared state
-        self.debounce_task: Optional[Future[Any]] = None  # Future from run_coroutine_threadsafe
+        self.debounce_task: Future[Any] | None = None  # Future from run_coroutine_threadsafe
         # CRITICAL: Debounce delay to ensure file write completion
         self.debounce_delay = 0.1  # 100ms debounce as per briefing
         self.is_analyzing = False  # Prevent overlapping analysis runs
 
-    def on_modified(self, event: Any):
-        logger.debug(
-            f"🔍 Watchdog detected modification: {event.src_path} (is_dir: {event.is_directory})"
-        )
+    def on_modified(self, event: FileSystemEvent) -> None:
+        logger.debug(f"🔍 Watchdog detected modification: {event.src_path} (is_dir: {event.is_directory})")
         if event.is_directory:
             return
         path: Any = event.src_path
@@ -53,10 +52,8 @@ class CodeChangeHandler(FileSystemEventHandler):
             path = path.decode("utf-8")
         self._handle_change(str(path))
 
-    def on_created(self, event: Any):
-        logger.debug(
-            f"🔍 Watchdog detected creation: {event.src_path} (is_dir: {event.is_directory})"
-        )
+    def on_created(self, event: FileSystemEvent) -> None:
+        logger.debug(f"🔍 Watchdog detected creation: {event.src_path} (is_dir: {event.is_directory})")
         if event.is_directory:
             return
         path: Any = event.src_path
@@ -64,7 +61,7 @@ class CodeChangeHandler(FileSystemEventHandler):
             path = path.decode("utf-8")
         self._handle_change(str(path))
 
-    def _handle_change(self, file_path: str):
+    def _handle_change(self, file_path: str) -> None:
         """Track file change and schedule debounced analysis"""
         # Filter relevant files only
         if self._is_relevant_file(file_path):
@@ -87,9 +84,7 @@ class CodeChangeHandler(FileSystemEventHandler):
 
                     # CRITICAL: Use stored loop reference instead of get_event_loop()
                     # This works because watchdog runs in a separate thread
-                    self.debounce_task = asyncio.run_coroutine_threadsafe(
-                        self._debounced_analysis(), self.loop
-                    )
+                    self.debounce_task = asyncio.run_coroutine_threadsafe(self._debounced_analysis(), self.loop)
             except ValueError:
                 # File is outside project path
                 pass
@@ -216,17 +211,17 @@ class WatchManager:
         self,
         project_path: str,
         ws_manager: AnalysisNotifierPort,
-        selected_tools: Optional[list[str]] = None,
-    ):
+        selected_tools: list[str] | None = None,
+    ) -> None:
         self.project_path = Path(project_path)
         self.ws_manager = ws_manager
         self.selected_tools = selected_tools
-        self.observer: Optional[PollingObserver] = None
+        self.observer: PollingObserver | None = None
         self.is_running = False
         self.stop_event = asyncio.Event()
-        self.active_analysis_task: Optional[asyncio.Task[Any]] = None
+        self.active_analysis_task: asyncio.Task[Any] | None = None
 
-    async def start_watching(self):
+    async def start_watching(self) -> None:
         """Start live watch mode"""
         if self.is_running:
             logger.warning("Watch mode already running")
@@ -278,9 +273,7 @@ class WatchManager:
             raise
         except Exception as e:
             logger.error(f"❌ Initial analysis failed: {e}", exc_info=True)
-            await self.ws_manager.broadcast_raw(
-                {"type": "ERROR", "message": f"Initial analysis failed: {str(e)}"}
-            )
+            await self.ws_manager.broadcast_raw({"type": "ERROR", "message": f"Initial analysis failed: {str(e)}"})
         finally:
             self.active_analysis_task = None
 
@@ -290,11 +283,11 @@ class WatchManager:
         finally:
             await self.stop_watching()
 
-    async def stop(self):
+    async def stop(self) -> None:
         """Stop live watch mode"""
         await self.stop_watching()
 
-    async def stop_watching(self):
+    async def stop_watching(self) -> None:
         """Stop live watch mode"""
         if not self.is_running:
             return
@@ -311,9 +304,7 @@ class WatchManager:
                 pass
             self.active_analysis_task = None
 
-        await self.ws_manager.broadcast_raw(
-            {"type": "LOG", "message": "🛑 Live Watch Mode DEACTIVATED"}
-        )
+        await self.ws_manager.broadcast_raw({"type": "LOG", "message": "🛑 Live Watch Mode DEACTIVATED"})
 
         if self.observer:
             self.observer.stop()
@@ -329,7 +320,7 @@ class WatchManager:
 
         logger.info("✅ Watch mode stopped")
 
-    async def _run_analysis(self, files: List[str]):
+    async def _run_analysis(self, files: list[str]) -> None:
         """Callback to run incremental analysis"""
         try:
             self.active_analysis_task = asyncio.current_task()
@@ -358,13 +349,11 @@ class WatchManager:
             raise
         except Exception as e:
             logger.error(f"❌ Auto-analysis failed: {e}", exc_info=True)
-            await self.ws_manager.broadcast_raw(
-                {"type": "ERROR", "message": f"Auto-analysis failed: {str(e)}"}
-            )
+            await self.ws_manager.broadcast_raw({"type": "ERROR", "message": f"Auto-analysis failed: {str(e)}"})
         finally:
             self.active_analysis_task = None
 
-    def request_stop(self):
+    def request_stop(self) -> None:
         """Request watch mode to stop (non-blocking)"""
         logger.info("🛑 Stop requested for watch mode")
         self.stop_event.set()

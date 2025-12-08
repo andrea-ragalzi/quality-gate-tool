@@ -6,7 +6,7 @@ Implements strict resource control with Semaphore for stability
 import asyncio
 import logging
 from pathlib import Path
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Literal
 
 from ...domain.ports import AnalysisNotifierPort
 from .base_module import AnalysisModule
@@ -29,17 +29,17 @@ class AnalysisOrchestrator:
         project_path: str,
         mode: Literal["full", "incremental"],
         ws_manager: AnalysisNotifierPort,
-        selected_tools: Optional[List[str]] = None,
-    ):
+        selected_tools: list[str] | None = None,
+    ) -> None:
         self.project_path = Path(project_path)
         self.mode = mode
         self.ws_manager = ws_manager
         self.selected_tools = selected_tools
         # Semaphore for resource control
         self.analysis_semaphore = asyncio.Semaphore(MAX_CONCURRENT_ANALYSIS)
-        self.results: Dict[str, str] = {}  # module_id -> PASS/FAIL
+        self.results: dict[str, str] = {}  # module_id -> PASS/FAIL
 
-    async def get_modified_files(self) -> List[str]:
+    async def get_modified_files(self) -> list[str]:
         """
         Get list of modified files using git diff
         Returns empty list if not in incremental mode or git fails
@@ -76,7 +76,7 @@ class AnalysisOrchestrator:
             logger.error(f"Failed to get modified files: {e}")
             return []
 
-    async def run_parallel_modules(self, files: Optional[List[str]] = None) -> Dict[str, str]:
+    async def run_parallel_modules(self, files: list[str] | None = None) -> dict[str, str]:
         """
         Execute all modules with STRICT CONCURRENCY CONTROL (Mission Critical)
         Uses Semaphore to prevent RAM exhaustion on local machine
@@ -98,7 +98,7 @@ class AnalysisOrchestrator:
             module_configs = all_module_configs
 
         # Create all module instances
-        modules: List[AnalysisModule] = []
+        modules: list[AnalysisModule] = []
         for config in module_configs:
             module_class = MODULE_CLASSES.get(config["id"])
             if module_class:
@@ -112,7 +112,7 @@ class AnalysisOrchestrator:
 
         async def run_module_with_semaphore(
             module: AnalysisModule,
-        ) -> Union[str, Literal["FAIL"]]:
+        ) -> str | Literal["FAIL"]:
             """Wrapper to enforce semaphore limit - CRITICAL FOR STABILITY"""
             async with self.analysis_semaphore:
                 logger.info(
@@ -128,18 +128,14 @@ class AnalysisOrchestrator:
                     logger.info(f"🔒 Semaphore released for {module.module_id}")
 
         # Launch all modules with semaphore protection
-        logger.info(
-            f"🚀 Launching {len(modules)} modules (max {MAX_CONCURRENT_ANALYSIS} concurrent)"
-        )
-        tasks: List[asyncio.Task[Union[str, Literal["FAIL"]]]] = [
+        logger.info(f"🚀 Launching {len(modules)} modules (max {MAX_CONCURRENT_ANALYSIS} concurrent)")
+        tasks: list[asyncio.Task[str | Literal["FAIL"]]] = [
             asyncio.create_task(run_module_with_semaphore(module)) for module in modules
         ]
 
         try:
             # Wait for all tasks to complete
-            results: List[Union[str, BaseException, Literal["FAIL"]]] = await asyncio.gather(
-                *tasks, return_exceptions=True
-            )
+            results: list[str | BaseException | Literal["FAIL"]] = await asyncio.gather(*tasks, return_exceptions=True)
         except asyncio.CancelledError:
             logger.info("🛑 Orchestrator cancelled, cancelling child modules...")
             for task in tasks:
@@ -150,7 +146,7 @@ class AnalysisOrchestrator:
             raise
 
         # Collect results
-        status_map: Dict[str, Union[str, Literal["FAIL"]]] = {}
+        status_map: dict[str, str | Literal["FAIL"]] = {}
         for module, result in zip(modules, results, strict=False):
             if isinstance(result, BaseException):
                 logger.error(f"Module {module.module_id} raised exception: {result}")
@@ -161,7 +157,7 @@ class AnalysisOrchestrator:
 
         return status_map
 
-    def calculate_final_status(self, module_results: Dict[str, str]) -> Literal["PASS", "FAIL"]:
+    def calculate_final_status(self, module_results: dict[str, str]) -> Literal["PASS", "FAIL"]:
         """
         Calculate overall status based on module results
         PASS only if all modules passed
@@ -174,7 +170,7 @@ class AnalysisOrchestrator:
 
         return overall_status
 
-    async def execute(self, files: Optional[List[str]] = None) -> Dict[str, Any]:
+    async def execute(self, files: list[str] | None = None) -> dict[str, Any]:
         """
         Main execution method
         Returns analysis report
@@ -184,22 +180,18 @@ class AnalysisOrchestrator:
             await self.ws_manager.send_global_init()
 
             # Step 1: Determine files to analyze
-            modified_files: Optional[List[str]] = None
+            modified_files: list[str] | None = None
 
             if self.mode == "incremental":
                 if files:
                     # Use explicitly provided files (e.g. from Watchdog)
                     modified_files = files
-                    logger.info(
-                        f"🔍 Incremental analysis on {len(modified_files)} provided file(s)"
-                    )
+                    logger.info(f"🔍 Incremental analysis on {len(modified_files)} provided file(s)")
                 else:
                     # Fallback to git diff
                     modified_files = await self.get_modified_files()
                     if modified_files:
-                        logger.info(
-                            f"🔍 Incremental analysis on {len(modified_files)} git-detected file(s)"
-                        )
+                        logger.info(f"🔍 Incremental analysis on {len(modified_files)} git-detected file(s)")
 
             if self.mode == "incremental" and modified_files:
                 await self.ws_manager.broadcast_raw(
@@ -219,9 +211,7 @@ class AnalysisOrchestrator:
                 modified_files = None
             else:
                 logger.info("🔍 Full analysis mode")
-                await self.ws_manager.broadcast_raw(
-                    {"type": "LOG", "message": "🔍 Full analysis mode"}
-                )
+                await self.ws_manager.broadcast_raw({"type": "LOG", "message": "🔍 Full analysis mode"})
                 modified_files = None
 
             # Step 2: Run all modules in parallel
@@ -243,7 +233,5 @@ class AnalysisOrchestrator:
 
         except Exception as e:
             logger.error(f"❌ Orchestration failed: {e}", exc_info=True)
-            await self.ws_manager.broadcast_raw(
-                {"type": "ERROR", "message": f"Analysis failed: {str(e)}"}
-            )
+            await self.ws_manager.broadcast_raw({"type": "ERROR", "message": f"Analysis failed: {str(e)}"})
             return {"status": "FAIL", "error": str(e)}

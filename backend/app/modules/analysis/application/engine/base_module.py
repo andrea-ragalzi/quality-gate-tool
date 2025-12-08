@@ -7,9 +7,10 @@ import asyncio
 import logging
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import List, Literal, Optional
+from typing import Literal
 
 from ...domain.ports import AnalysisNotifierPort
+from ...infrastructure.log_parser import QualityLogParser
 
 logger = logging.getLogger(__name__)
 
@@ -26,16 +27,17 @@ class AnalysisModule(ABC):
         name: str,
         project_path: str,
         ws_manager: AnalysisNotifierPort,
-    ):
+    ) -> None:
         self.module_id = module_id
         self.name = name
         self.project_path = Path(project_path)
         self.ws_manager = ws_manager
         self.status: Literal["PENDING", "RUNNING", "PASS", "FAIL"] = "PENDING"
-        self.exit_code: Optional[int] = None
+        self.exit_code: int | None = None
+        self.config_warning: str | None = None
 
     @abstractmethod
-    def get_command(self, files: Optional[List[str]] = None) -> List[str]:
+    def get_command(self, files: list[str] | None = None) -> list[str]:
         """
         Return command to execute as list of strings
         files: optional list of files for incremental mode
@@ -47,7 +49,7 @@ class AnalysisModule(ABC):
         """Parse command output and return summary string"""
         pass
 
-    async def run(self, files: Optional[List[str]] = None) -> Literal["PASS", "FAIL"]:
+    async def run(self, files: list[str] | None = None) -> Literal["PASS", "FAIL"]:
         """
         Execute module with real-time log streaming and RESOURCE CLEANUP
         CRITICAL: Ensures immediate flushing and proper process termination
@@ -61,6 +63,10 @@ class AnalysisModule(ABC):
 
             # Get command
             cmd = self.get_command(files)
+
+            # Send configuration warning if any
+            if self.config_warning:
+                await self.ws_manager.send_log(self.module_id, f"⚠️ {self.config_warning}")
 
             # CRITICAL: Add unbuffered flag for Python commands
             if cmd[0] in ["python", "python3"]:
@@ -80,11 +86,11 @@ class AnalysisModule(ABC):
             )
 
             # Capture output for summary
-            stdout_chunks: List[str] = []
-            stderr_chunks: List[str] = []
+            stdout_chunks: list[str] = []
+            stderr_chunks: list[str] = []
 
             # Stream stdout in real-time
-            async def stream_stdout():
+            async def stream_stdout() -> None:
                 if process and process.stdout:
                     while True:
                         chunk = await process.stdout.read(64)
@@ -95,7 +101,7 @@ class AnalysisModule(ABC):
                         await self.ws_manager.send_stream(self.module_id, decoded)
 
             # Stream stderr in real-time
-            async def stream_stderr():
+            async def stream_stderr() -> None:
                 if process and process.stderr:
                     while True:
                         chunk = await process.stderr.read(64)
@@ -117,6 +123,18 @@ class AnalysisModule(ABC):
             stdout_str = "".join(stdout_chunks)
             stderr_str = "".join(stderr_chunks)
             summary = self.get_summary(stdout_str, stderr_str, self.exit_code or 1)
+
+            # Parse logs and send metrics
+            try:
+                parser = QualityLogParser()
+                # Combine stdout and stderr for parsing
+                full_log = stdout_str + "\n" + stderr_str
+                metrics_report = parser.parse_content(full_log, self.module_id)
+
+                # Send metrics
+                await self.ws_manager.send_metrics(self.module_id, metrics_report)
+            except Exception as e:
+                logger.error(f"Failed to parse logs for {self.module_id}: {e}")
 
             # Send END message
             await self.ws_manager.send_end(self.module_id, self.status, summary)
@@ -141,7 +159,7 @@ class AnalysisModule(ABC):
                     process.terminate()
                     # Give it a short moment to die gracefully
                     await asyncio.wait_for(process.wait(), timeout=1.0)
-                except (asyncio.TimeoutError, Exception):
+                except (TimeoutError, Exception):
                     logger.warning(f"⚠️ Force killing {self.module_id}...")
                     try:
                         process.kill()

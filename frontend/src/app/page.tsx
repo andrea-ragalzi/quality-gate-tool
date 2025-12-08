@@ -386,6 +386,7 @@ export default function Home() {
                           status={moduleLogs[module.id]?.status || "PENDING"}
                           logs={moduleLogs[module.id]?.logs || []}
                           summary={moduleLogs[module.id]?.summary}
+                          metrics={moduleLogs[module.id]?.metrics}
                           onViewLog={() => viewFullLog(module.id)}
                         />
                       ))}

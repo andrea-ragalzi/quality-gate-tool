@@ -228,9 +228,7 @@ async def test_project_switch_updates_monitoring(tmp_path: Path):
 
     # Patch PollingObserver to be faster (0.1s timeout)
     # This ensures that 0.7s wait (0.5 debounce + 0.2 buffer) is enough
-    with patch(
-        "app.modules.analysis.infrastructure.adapters.file_watcher.PollingObserver"
-    ) as MockObserver:
+    with patch("app.modules.analysis.infrastructure.adapters.file_watcher.PollingObserver") as MockObserver:
         MockObserver.side_effect = lambda: PollingObserver(timeout=0.1)
 
         # Patch delay

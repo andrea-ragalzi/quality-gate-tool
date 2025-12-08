@@ -18,9 +18,7 @@ async def test_orchestrator_initialization(mock_notifier: MagicMock):
     mode = "full"
 
     # Act
-    orchestrator = AnalysisOrchestrator(
-        project_path=project_path, mode=mode, ws_manager=mock_notifier
-    )
+    orchestrator = AnalysisOrchestrator(project_path=project_path, mode=mode, ws_manager=mock_notifier)
 
     # Assert
     assert orchestrator.mode == "full"
@@ -35,9 +33,7 @@ async def test_orchestrator_incremental_mode(mock_notifier: MagicMock):
     mode = "incremental"
 
     # Act
-    orchestrator = AnalysisOrchestrator(
-        project_path=project_path, mode=mode, ws_manager=mock_notifier
-    )
+    orchestrator = AnalysisOrchestrator(project_path=project_path, mode=mode, ws_manager=mock_notifier)
 
     # Assert
     assert orchestrator.mode == "incremental"
