@@ -365,18 +365,6 @@ describe("Metrics Dashboard Test Plan", () => {
     ).toBeGreaterThan(0);
   });
 
-  // S-04 RAW Output
-  it("S-04: RAW Output", async () => {
-    renderDashboard();
-    const tab = screen.getByRole("tab", { name: /raw/i });
-    fireEvent.click(tab);
-    // RAW format: [TYPE] [TOOL] ...
-    // We expect [WARNING] [TypeScript]
-    expect(
-      screen.getAllByText(/\[WARNING\] \[TypeScript\]/).length,
-    ).toBeGreaterThan(0);
-  });
-
   // S-05 Copy to Clipboard
   it("S-05: Copy to Clipboard", async () => {
     const writeTextMock = vi.fn().mockResolvedValue(undefined);

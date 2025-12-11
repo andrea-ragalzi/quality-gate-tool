@@ -14,11 +14,8 @@ import {
   IconFileText,
   IconBolt,
   IconCopy,
-  IconTerminal,
 } from "@tabler/icons-react";
 import { Finding } from "../types";
-import { ModuleLogs } from "@/features/analysis/types";
-import ConsoleOutput from "@/components/ConsoleOutput";
 import {
   formatDate,
   copyToClipboard,
@@ -26,51 +23,20 @@ import {
   serializeJSON,
   serializeYAML,
   serializeTOON,
-  serializeRAW,
 } from "../utils";
 import classes from "./MetricsContent.module.css";
 
 interface MetricsContentProps {
   filteredFindings: Finding[];
   matrixGreen: string;
-  moduleLogs?: ModuleLogs;
 }
 
 export const MetricsContent: React.FC<MetricsContentProps> = ({
   filteredFindings,
   matrixGreen,
-  moduleLogs,
 }) => {
   const [activeTab, setActiveTab] = useState<string | null>("table");
   const [copyStatus, setCopyStatus] = useState<string | null>(null);
-
-  const consoleMessages = React.useMemo(() => {
-    if (!moduleLogs) return [];
-    const messages: any[] = [];
-    Object.entries(moduleLogs).forEach(([moduleId, logData]) => {
-      if (logData?.logs) {
-        logData.logs.forEach((logLine) => {
-          const match = logLine.match(/^\[(.*?)\] (.*)/);
-          if (match) {
-            messages.push({
-              type: "info",
-              timestamp: match[1],
-              message: match[2],
-              tool: moduleId,
-            });
-          } else {
-            messages.push({
-              type: "info",
-              timestamp: "",
-              message: logLine,
-              tool: moduleId,
-            });
-          }
-        });
-      }
-    });
-    return messages;
-  }, [moduleLogs]);
 
   const handleCopy = (format: string) => {
     let text = "";
@@ -86,9 +52,6 @@ export const MetricsContent: React.FC<MetricsContentProps> = ({
         break;
       case "toon":
         text = serializeTOON(filteredFindings);
-        break;
-      case "raw":
-        text = serializeRAW(filteredFindings);
         break;
     }
     copyToClipboard(text, () => {
@@ -118,12 +81,6 @@ export const MetricsContent: React.FC<MetricsContentProps> = ({
           </Tabs.Tab>
           <Tabs.Tab value="toon" leftSection={<IconBolt size={16} />}>
             TOON
-          </Tabs.Tab>
-          <Tabs.Tab value="raw" leftSection={<IconFileText size={16} />}>
-            RAW
-          </Tabs.Tab>
-          <Tabs.Tab value="logs" leftSection={<IconTerminal size={16} />}>
-            LOGS
           </Tabs.Tab>
         </Tabs.List>
 
@@ -279,37 +236,6 @@ export const MetricsContent: React.FC<MetricsContentProps> = ({
         >
           {serializeTOON(filteredFindings)}
         </Code>
-      </Tabs.Panel>
-
-      <Tabs.Panel value="raw">
-        <Code
-          block
-          style={{
-            backgroundColor: "#000",
-            color: matrixGreen,
-            border: `1px solid ${matrixGreen}`,
-            minHeight: "calc(100vh - 200px)",
-          }}
-        >
-          {serializeRAW(filteredFindings)}
-        </Code>
-      </Tabs.Panel>
-
-      <Tabs.Panel value="logs">
-        {moduleLogs && Object.keys(moduleLogs).length > 0 ? (
-          <ConsoleOutput messages={consoleMessages} />
-        ) : (
-          <Paper
-            p="xl"
-            style={{
-              textAlign: "center",
-              backgroundColor: "transparent",
-              color: matrixGreen,
-            }}
-          >
-            No logs available
-          </Paper>
-        )}
       </Tabs.Panel>
     </Tabs>
   );

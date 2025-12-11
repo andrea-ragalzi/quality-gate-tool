@@ -54,14 +54,3 @@ export const serializeTOON = (data: Finding[]) => {
     .join("\n");
   return `${header}\n${rows}`;
 };
-
-export const serializeRAW = (data: Finding[]) => {
-  return data
-    .map(
-      (f) =>
-        `[${f.type.toUpperCase()}] [${f.tool}] {${f.filepath}}:{${f.line}} - ${
-          f.message
-        } (${f.id})`,
-    )
-    .join("\n");
-};

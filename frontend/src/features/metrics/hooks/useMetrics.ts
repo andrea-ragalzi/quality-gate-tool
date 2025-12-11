@@ -1,10 +1,7 @@
 import { useMetricsStore } from "../stores/useMetricsStore";
-import { ModuleLogs, ModuleConfig } from "@/types/analysis";
+import { ModuleConfig } from "@/types/analysis";
 
-export const useMetrics = (
-  moduleLogs?: ModuleLogs,
-  availableTools?: ModuleConfig[],
-) => {
+export const useMetrics = (availableTools?: ModuleConfig[]) => {
   const { filteredFindings, filters, sortOrder, setFilters, setSortOrder } =
     useMetricsStore();
 

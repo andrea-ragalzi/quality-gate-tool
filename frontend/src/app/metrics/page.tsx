@@ -14,13 +14,11 @@ import {
 import { useDisclosure } from "@mantine/hooks";
 import { IconBolt, IconArrowLeft } from "@tabler/icons-react";
 import { useMetrics } from "../../features/metrics/hooks/useMetrics";
-import { useAnalysisStore } from "@/features/analysis/stores/useAnalysisStore";
 import { useTools } from "@/features/analysis/hooks/useTools";
 import { MetricsFilterSidebar } from "../../features/metrics/components/MetricsFilterSidebar";
 import { MetricsContent } from "../../features/metrics/components/MetricsContent";
 
 export default function MetricsDashboard() {
-  const { moduleLogs } = useAnalysisStore();
   const { data: tools = [] } = useTools();
 
   const {
@@ -33,7 +31,7 @@ export default function MetricsDashboard() {
     setSortOrder,
     dateRange,
     setDateRange,
-  } = useMetrics(moduleLogs, tools);
+  } = useMetrics(tools);
 
   const [mobileOpened, { toggle: toggleMobile }] = useDisclosure();
 
@@ -132,7 +130,6 @@ export default function MetricsDashboard() {
           <MetricsContent
             filteredFindings={filteredFindings}
             matrixGreen={matrixGreen}
-            moduleLogs={moduleLogs}
           />
         </Container>
       </AppShell.Main>
