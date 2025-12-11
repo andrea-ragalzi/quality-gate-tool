@@ -24,9 +24,21 @@ const theme = createTheme({
       "#373A40",
       "#2C2E33",
       "#25262b",
-      "#1A1B1E",
+      "#1a1a1d", // --matrix-dark (Panel BG)
       "#141517",
-      "#101113",
+      "#0d0208", // --matrix-black (Main BG)
+    ],
+    green: [
+      "#e6ffee",
+      "#d3f9d8",
+      "#a9f2b2",
+      "#7ceb8b",
+      "#57e56a",
+      "#40e154",
+      "#32df49",
+      "#24c53a", // --matrix-green-dark
+      "#1ab031",
+      "#00ff41", // --matrix-green
     ],
   },
 });

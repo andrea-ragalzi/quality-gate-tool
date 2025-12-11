@@ -3,11 +3,29 @@
 
 // Mantine Component Overrides - Matrix Theme
 :root {
+  // Standardized Matrix Palette
+  --matrix-green: #{vars.$matrix-green};
+  --matrix-green-dark: #{vars.$matrix-green-dark};
+  --matrix-green-bright: #{vars.$matrix-green-bright};
+  --matrix-black: #{vars.$matrix-black};
+  --matrix-dark: #{vars.$matrix-dark};
+  --matrix-red: #{vars.$matrix-red};
+  --matrix-yellow: #{vars.$matrix-yellow};
+  --matrix-cyan: #{vars.$matrix-cyan};
+
+  // Mantine Mappings
   --mantine-color-dark-9: #{vars.$matrix-black};
   --mantine-color-dark-8: #{vars.$matrix-dark};
   --mantine-color-dark-7: #2a2a2e;
   --mantine-color-green-5: #{vars.$matrix-green};
   --mantine-color-green-6: #{vars.$matrix-green-dark};
+}
+
+// Global Focus Ring (Accessibility)
+:focus-visible {
+  outline: 2px solid var(--matrix-green-bright) !important;
+  outline-offset: 2px;
+  box-shadow: 0 0 10px var(--matrix-green-bright);
 }
 
 // Buttons - Matrix Style
