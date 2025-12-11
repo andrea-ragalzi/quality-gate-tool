@@ -26,5 +26,7 @@ async def create_project(
 
 
 @router.get("/", response_model=list[Project])
-async def list_projects(service: ProjectService = Depends(get_project_service)) -> list[Project]:  # noqa: B008
+async def list_projects(
+    service: ProjectService = Depends(get_project_service),  # noqa: B008
+) -> list[Project]:
     return await service.list_projects()

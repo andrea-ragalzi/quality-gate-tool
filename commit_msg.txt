@@ -1,0 +1,10 @@
+Add unit tests for streaming architecture, enhance debugging documentation, and improve frontend loading states
+
+- Created a new unit test for the streaming architecture to verify I/O decoupling between subprocess output and WebSocket sending.
+- Increased memory limit in Docker Compose configuration from 512m to 2048m.
+- Added a comprehensive debugging guide for backpressure mitigation in the analysis service.
+- Updated the frontend to show a loading state while fetching tools data, improving user experience.
+- Introduced default module configurations for analysis tools.
+- Enhanced the tools fetching logic to utilize local storage for caching projects.
+- Implemented gzip decompression for streamed logs in the analysis store.
+- Added error context and visual assets for various test failures in the frontend test results.

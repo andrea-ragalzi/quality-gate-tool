@@ -33,8 +33,11 @@ class ScopedAnalysisNotifier(AnalysisNotifierPort):
     async def send_log(self, module_id: str, message: str) -> None:
         await self.notifier.send_update(self.project_id, {"type": "LOG", "module": module_id, "data": message})
 
-    async def send_stream(self, module_id: str, chunk: str) -> None:
-        await self.notifier.send_update(self.project_id, {"type": "STREAM", "module": module_id, "data": chunk})
+    async def send_stream(self, module_id: str, chunk: str, encoding: str | None = None) -> None:
+        payload = {"type": "STREAM", "module": module_id, "data": chunk}
+        if encoding:
+            payload["encoding"] = encoding
+        await self.notifier.send_update(self.project_id, payload)
 
     async def send_end(self, module_id: str, status: str, summary: str) -> None:
         await self.notifier.send_update(

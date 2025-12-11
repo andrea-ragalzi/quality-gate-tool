@@ -1,0 +1,44 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+    - generic:
+        - generic: Wake up, Use_
+        - button "[ JUMP ]" [ref=e2] [cursor=pointer]
+    - generic [ref=e3]:
+        - complementary [ref=e4]:
+            - generic [ref=e5]:
+                - generic [ref=e6]:
+                    - heading "CONTROL PANEL" [level=3] [ref=e7]
+                    - paragraph [ref=e8]: 12/11/2025, 1:31:54 PM
+                - paragraph [ref=e10]: SYSTEM READY
+                - generic [ref=e11]:
+                    - paragraph [ref=e12]: 📁 Project Path
+                    - textbox "/projects/quality-gate-test-project" [ref=e15]
+                    - button "Browse" [ref=e16] [cursor=pointer]:
+                        - generic [ref=e17]:
+                            - img [ref=e19]
+                            - generic [ref=e21]: Browse
+                    - button "Settings" [ref=e22] [cursor=pointer]:
+                        - generic [ref=e23]:
+                            - img [ref=e25]
+                            - generic [ref=e28]: Settings
+                    - link "Metrics Dashboard" [ref=e29] [cursor=pointer]:
+                        - /url: /metrics
+                        - generic [ref=e30]:
+                            - img [ref=e32]
+                            - generic [ref=e36]: Metrics Dashboard
+                - generic [ref=e37]:
+                    - button "START WATCH" [disabled] [ref=e38]:
+                        - generic [ref=e39]:
+                            - img [ref=e41]
+                            - generic [ref=e43]: START WATCH
+                    - paragraph [ref=e44]: 💤 Idle
+        - main [ref=e45]:
+            - generic [ref=e47]:
+                - heading "Quality Gate Terminal Quality Gate Terminal Quality Gate Terminal" [level=1] [ref=e49]
+                - paragraph [ref=e51]: "[STATUS: SYSTEM READY]"
+    - button "Open Next.js Dev Tools" [ref=e57] [cursor=pointer]:
+        - img [ref=e58]
+    - alert [ref=e61]
+```

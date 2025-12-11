@@ -176,6 +176,7 @@ class AnalysisOrchestrator:
         Main execution method
         Returns analysis report
         """
+        logger.info("Orchestrator execution started")
         try:
             # Send global INIT
             await self.ws_manager.send_global_init()

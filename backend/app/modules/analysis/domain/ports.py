@@ -28,7 +28,7 @@ class AnalysisNotifierPort(ABC):
         pass  # pragma: no cover
 
     @abstractmethod
-    async def send_stream(self, module_id: str, chunk: str) -> None:
+    async def send_stream(self, module_id: str, chunk: str, encoding: str | None = None) -> None:
         pass  # pragma: no cover
 
     @abstractmethod

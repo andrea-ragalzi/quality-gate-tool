@@ -42,7 +42,7 @@ const FileSystem3D = dynamic(() => import("@/components/FileSystem3D"), {
 
 export default function Home() {
   // Tools Data (TanStack Query)
-  const { data: tools = [] } = useTools();
+  const { data: tools = [], isLoading: toolsLoading } = useTools();
 
   // Matrix Intro Logic (Zustand)
   const { isMatrixActive, matrixPhase, setMatrixPhase, completeMatrixIntro } =
@@ -210,13 +210,17 @@ export default function Home() {
         style={{
           zIndex: 1000,
           transform:
-            matrixPhase === "complete"
+            matrixPhase === "complete" || !isMatrixActive
               ? "none"
               : matrixPhase === "shatter"
                 ? "perspective(2000px) translateZ(0) rotateX(0deg)"
                 : "perspective(2000px) translateZ(-10000px) rotateX(30deg)",
           opacity:
-            matrixPhase === "shatter" || matrixPhase === "complete" ? 1 : 0,
+            matrixPhase === "shatter" ||
+            matrixPhase === "complete" ||
+            !isMatrixActive
+              ? 1
+              : 0,
           transition:
             matrixPhase === "shatter"
               ? "transform 3s cubic-bezier(0.16, 1, 0.3, 1), opacity 2s ease-in"
@@ -408,26 +412,32 @@ export default function Home() {
 
               {/* Active Modules Section */}
               <div>
-                <div className="modules-grid">
-                  {columns.map((colModules, colIndex) => (
-                    <div key={colIndex} className="modules-column">
-                      {colModules.map((module) => (
-                        <ModuleCard
-                          key={module.id}
-                          moduleId={module.id}
-                          title={module.title}
-                          subtitle={module.subtitle}
-                          icon={module.icon}
-                          status={moduleLogs[module.id]?.status || "PENDING"}
-                          logs={moduleLogs[module.id]?.logs || []}
-                          summary={moduleLogs[module.id]?.summary}
-                          metrics={moduleLogs[module.id]?.metrics}
-                          onViewLog={() => viewFullLog(module.id)}
-                        />
-                      ))}
-                    </div>
-                  ))}
-                </div>
+                {toolsLoading ? (
+                  <Text c="dimmed" ta="center" size="sm" mt="xl">
+                    LOADING MODULES...
+                  </Text>
+                ) : (
+                  <div className="modules-grid">
+                    {columns.map((colModules, colIndex) => (
+                      <div key={colIndex} className="modules-column">
+                        {colModules.map((module) => (
+                          <ModuleCard
+                            key={module.id}
+                            moduleId={module.id}
+                            title={module.title}
+                            subtitle={module.subtitle}
+                            icon={module.icon}
+                            status={moduleLogs[module.id]?.status || "PENDING"}
+                            logs={moduleLogs[module.id]?.logs || []}
+                            summary={moduleLogs[module.id]?.summary}
+                            metrics={moduleLogs[module.id]?.metrics}
+                            onViewLog={() => viewFullLog(module.id)}
+                          />
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </Stack>
           </div>

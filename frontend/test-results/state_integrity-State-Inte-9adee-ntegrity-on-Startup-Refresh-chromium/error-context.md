@@ -1,0 +1,122 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+    - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+        - img [ref=e8]
+    - alert [ref=e11]
+    - generic [ref=e12]:
+        - banner [ref=e13]:
+            - generic [ref=e14]:
+                - generic [ref=e15]:
+                    - img [ref=e16]
+                    - heading "QUALITY GATE METRICS" [level=3] [ref=e18]
+                - generic [ref=e19]:
+                    - link "BACK" [ref=e20] [cursor=pointer]:
+                        - /url: /
+                        - generic [ref=e21]:
+                            - img [ref=e23]
+                            - generic [ref=e26]: BACK
+                    - generic [ref=e28]: 0 FINDINGS
+        - navigation [ref=e29]:
+            - generic [ref=e30]:
+                - generic [ref=e31]:
+                    - img [ref=e32]
+                    - paragraph [ref=e34]: FILTERS
+                - generic [ref=e35]:
+                    - paragraph [ref=e37]: TOOLS
+                    - generic [ref=e38]:
+                        - textbox "TOOLS" [ref=e41] [cursor=pointer]:
+                            - /placeholder: Select tools
+                        - generic:
+                            - img
+                - generic [ref=e42]:
+                    - paragraph [ref=e44]: TYPE
+                    - generic [ref=e45]:
+                        - generic [ref=e47] [cursor=pointer]:
+                            - generic [ref=e48]:
+                                - generic [ref=e49]: Error
+                                - button [ref=e50]:
+                                    - img
+                            - generic [ref=e51]:
+                                - generic [ref=e52]: Warning
+                                - button [ref=e53]:
+                                    - img
+                            - generic [ref=e54]:
+                                - generic [ref=e55]: Info
+                                - button [ref=e56]:
+                                    - img
+                            - textbox "TYPE" [ref=e57]:
+                                - /placeholder: Select type
+                        - generic:
+                            - img
+                - generic [ref=e58]:
+                    - paragraph [ref=e60]: SORT ORDER
+                    - generic [ref=e61]:
+                        - img [ref=e63]
+                        - textbox "SORT ORDER" [ref=e65] [cursor=pointer]: Type (Error -> Info)
+                        - generic:
+                            - img
+                - generic [ref=e66]:
+                    - paragraph [ref=e67]: TIMESTAMP RANGE
+                    - generic [ref=e68]:
+                        - textbox [ref=e71]
+                        - textbox [ref=e74]
+        - main [ref=e75]:
+            - generic [ref=e77]:
+                - generic [ref=e78]:
+                    - tablist [ref=e79]:
+                        - tab "TABLE" [selected] [ref=e80] [cursor=pointer]:
+                            - img [ref=e82]
+                            - generic [ref=e84]: TABLE
+                        - tab "JSON" [ref=e85] [cursor=pointer]:
+                            - img [ref=e87]
+                            - generic [ref=e90]: JSON
+                        - tab "YAML" [ref=e91] [cursor=pointer]:
+                            - img [ref=e93]
+                            - generic [ref=e96]: YAML
+                        - tab "TOON" [ref=e97] [cursor=pointer]:
+                            - img [ref=e99]
+                            - generic [ref=e101]: TOON
+                    - button "COPY TABLE DATA" [ref=e102] [cursor=pointer]:
+                        - generic [ref=e103]:
+                            - img [ref=e105]
+                            - generic [ref=e108]: COPY TABLE DATA
+                - tabpanel "TABLE" [ref=e109]:
+                    - table [ref=e111]:
+                        - rowgroup [ref=e112]:
+                            - row "Type Tool Line Filepath Message Timestamp" [ref=e113]:
+                                - columnheader "Type" [ref=e114] [cursor=pointer]:
+                                    - generic [ref=e115]:
+                                        - generic [ref=e116]: Type
+                                        - img [ref=e117]
+                                    - textbox "Filter Type..." [ref=e121]
+                                - columnheader "Tool" [ref=e122] [cursor=pointer]:
+                                    - generic [ref=e123]:
+                                        - generic [ref=e124]: Tool
+                                        - img [ref=e125]
+                                    - textbox "Filter Tool..." [ref=e129]
+                                - columnheader "Line" [ref=e130] [cursor=pointer]:
+                                    - generic [ref=e131]:
+                                        - generic [ref=e132]: Line
+                                        - img [ref=e133]
+                                    - textbox "Filter Line..." [ref=e137]
+                                - columnheader "Filepath" [ref=e138] [cursor=pointer]:
+                                    - generic [ref=e139]:
+                                        - generic [ref=e140]: Filepath
+                                        - img [ref=e141]
+                                    - textbox "Filter Filepath..." [ref=e145]
+                                - columnheader "Message" [ref=e146] [cursor=pointer]:
+                                    - generic [ref=e147]:
+                                        - generic [ref=e148]: Message
+                                        - img [ref=e149]
+                                    - textbox "Filter Message..." [ref=e153]
+                                - columnheader "Timestamp" [ref=e154] [cursor=pointer]:
+                                    - generic [ref=e155]:
+                                        - generic [ref=e156]: Timestamp
+                                        - img [ref=e157]
+                                    - textbox "Filter Timestamp..." [ref=e161]
+                        - rowgroup [ref=e162]:
+                            - row "No findings match your filters." [ref=e163]:
+                                - cell "No findings match your filters." [ref=e164]
+```

@@ -1,3 +1,6 @@
+import logging
+import sys
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -28,6 +31,14 @@ from app.modules.project.infrastructure.web.router import get_project_service
 
 # Project Module Imports
 from app.modules.project.infrastructure.web.router import router as project_router
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    stream=sys.stdout,
+)
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Quality Gate Tool (Modular Monolith)")
 

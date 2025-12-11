@@ -1,0 +1,48 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+    - generic:
+        - generic: Wake up, Username. The system_
+        - button "[ JUMP ]" [ref=e2] [cursor=pointer]
+    - generic [ref=e3]:
+        - complementary [ref=e4]:
+            - generic [ref=e5]:
+                - generic [ref=e6]:
+                    - heading "CONTROL PANEL" [level=3] [ref=e7]
+                    - paragraph [ref=e8]: 12/11/2025, 1:32:09 PM
+                - paragraph [ref=e10]: ANALYSIS IN PROGRESS...
+                - generic [ref=e11]:
+                    - paragraph [ref=e12]: 📁 Project Path
+                    - textbox "/projects/quality-gate-test-project" [disabled] [ref=e15]: /home/andrea/Workspace/quality-gate-tool
+                    - button "Browse" [disabled] [ref=e16]:
+                        - generic [ref=e17]:
+                            - img [ref=e19]
+                            - generic [ref=e21]: Browse
+                    - button "Settings" [disabled] [ref=e22]:
+                        - generic [ref=e23]:
+                            - img [ref=e25]
+                            - generic [ref=e28]: Settings
+                    - link "Metrics Dashboard" [ref=e29] [cursor=pointer]:
+                        - /url: /metrics
+                        - generic [ref=e30]:
+                            - img [ref=e32]
+                            - generic [ref=e36]: Metrics Dashboard
+                - generic [ref=e37]:
+                    - button "STOP WATCH" [disabled] [ref=e38]:
+                        - generic [ref=e41]:
+                            - img [ref=e43]
+                            - generic [ref=e45]: STOP WATCH
+                    - paragraph [ref=e46]: 👁️ Monitoring filesystem...
+        - main [ref=e47]:
+            - generic [ref=e49]:
+                - heading "Quality Gate Terminal Quality Gate Terminal Quality Gate Terminal" [level=1] [ref=e51]
+                - paragraph [ref=e53]: "[STATUS: ANALYSIS IN PROGRESS...]"
+    - button "Open Next.js Dev Tools" [ref=e59] [cursor=pointer]:
+        - img [ref=e60]
+    - dialog [active] [ref=e64]:
+        - generic [ref=e71]:
+            - paragraph [ref=e72]: Loading...
+            - paragraph [ref=e73]: Starting watch mode...
+    - alert [ref=e74]
+```

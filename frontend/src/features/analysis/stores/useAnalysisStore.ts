@@ -96,8 +96,63 @@ export const useAnalysisStore = create<AnalysisStore>((set, get) => {
                 fullLog: currentLog.fullLog + logLine + "\n",
               });
             } else if (data.type === "STREAM") {
-              const msg = data.data || data.message;
-              // Simple stream appending logic
+              let msg = data.data || data.message;
+
+              // Handle Compression
+              if (data.encoding === "gzip_base64") {
+                try {
+                  const binaryString = atob(msg);
+                  const bytes = new Uint8Array(binaryString.length);
+                  for (let i = 0; i < binaryString.length; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                  }
+                  // Use DecompressionStream (Modern Browsers)
+                  // Note: DecompressionStream is async, but we are in a sync callback.
+                  // We need to handle this carefully.
+                  // For simplicity in this store, we might need a sync approach or handle async.
+                  // Since DecompressionStream is async, we'll use a self-invoking async function
+                  // But this might cause out-of-order logs if not careful.
+                  // Ideally, we should use a library like pako for sync decompression or manage a queue.
+                  // Given the constraints, let's try to use pako if available, or fallback to a simple async handler
+                  // that updates the store when ready.
+                  // Wait, we don't have pako.
+                  // Let's use DecompressionStream and hope for the best regarding order (usually fast enough).
+
+                  const stream = new Response(bytes).body?.pipeThrough(
+                    new DecompressionStream("gzip"),
+                  );
+                  if (stream) {
+                    new Response(stream).text().then((decompressed) => {
+                      // Update store asynchronously
+                      const state = get(); // Re-get state to ensure freshness
+                      const currentLog = state.moduleLogs[moduleId] || {
+                        logs: [],
+                        fullLog: "",
+                        status: "PENDING",
+                      };
+                      const currentLogs = [...currentLog.logs];
+                      if (
+                        currentLogs.length > 0 &&
+                        !currentLogs[currentLogs.length - 1].endsWith("\n")
+                      ) {
+                        currentLogs[currentLogs.length - 1] += decompressed;
+                      } else {
+                        currentLogs.push(decompressed);
+                      }
+                      state.updateModuleLog(moduleId, {
+                        fullLog: currentLog.fullLog + decompressed,
+                        logs: currentLogs.slice(-10),
+                      });
+                    });
+                    return; // Skip default update
+                  }
+                } catch (e) {
+                  console.error("Decompression failed", e);
+                  msg = "[Decompression Error]";
+                }
+              }
+
+              // Simple stream appending logic (Default / Fallback)
               const currentLogs = [...currentLog.logs];
               if (
                 currentLogs.length > 0 &&

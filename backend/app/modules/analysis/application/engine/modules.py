@@ -305,13 +305,13 @@ class PyrightModule(AnalysisModule):
     """B_Pyright: Python Strict Type Checking"""
 
     def get_command(self, files: list[str] | None = None) -> list[str]:
-        # Use python3 -u -m pyright to ensure unbuffered output
+        # Use python3 -m pyright
         # Remove --outputjson to get text output for streaming
         # Force version to avoid warning
         import os
 
         os.environ["PYRIGHT_PYTHON_FORCE_VERSION"] = "latest"
-        cmd = ["python3", "-u", "-m", "pyright"]
+        cmd = ["python3", "-m", "pyright"]
 
         target_dir = "."
         # Agnostic check: if pyproject.toml is not in root, check immediate subdirectories
@@ -356,10 +356,9 @@ class LizardModule(AnalysisModule):
     """B_Lizard: Cyclomatic Complexity (Max 15) - Python & TypeScript/JavaScript"""
 
     def get_command(self, files: list[str] | None = None) -> list[str]:
-        # Use python3 -u -m lizard to ensure unbuffered output
+        # Use python3 -m lizard
         cmd = [
             "python3",
-            "-u",
             "-m",
             "lizard",
             "--CCN",
@@ -375,20 +374,21 @@ class LizardModule(AnalysisModule):
             "*/node_modules/*",
             "--exclude",
             "*/.next/*",
+            "--exclude",
+            "**/.venv/*",
+            "--exclude",
+            "**/venv/*",
+            "--exclude",
+            "**/node_modules/*",
+            "--exclude",
+            "**/dist/*",
+            "--exclude",
+            "**/build/*",
         ]
 
+        # Always analyze the root directory to include both Backend (Python) and Frontend (TS/JS)
+        # Lizard handles multiple languages and we already have excludes for venv/node_modules
         target_dir = "."
-        # Agnostic check: if pyproject.toml is not in root, check immediate subdirectories
-        if not (self.project_path / "pyproject.toml").exists():
-            found = False
-            for path in self.project_path.iterdir():
-                if path.is_dir() and (path / "pyproject.toml").exists():
-                    target_dir = path.name
-                    found = True
-                    break
-
-            if not found:
-                self.config_warning = "Configuration file 'pyproject.toml' not found. Using default settings."
 
         if files is not None:
             # Filter for Python, TypeScript, and JavaScript files

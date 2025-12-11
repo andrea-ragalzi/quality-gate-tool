@@ -1,3 +1,4 @@
+import logging
 from typing import Literal
 
 from ..infrastructure.adapters.file_watcher import WatchManager
@@ -5,6 +6,8 @@ from ..infrastructure.adapters.scoped_notifier import ScopedAnalysisNotifier
 from ..infrastructure.adapters.websocket_notifier import WebSocketNotifier
 from .engine.modules import MODULE_METADATA
 from .engine.orchestrator import AnalysisOrchestrator
+
+logger = logging.getLogger(__name__)
 
 
 class AnalysisOrchestratorService:
@@ -23,6 +26,7 @@ class AnalysisOrchestratorService:
         mode: Literal["full", "incremental", "watch"] = "full",
         selected_tools: list[str] | None = None,
     ) -> dict[str, str]:
+        logger.info(f"Service starting analysis for {project_id} in mode {mode}")
         # Check for conflicts
         if project_id in self.active_analyses or (mode != "watch" and project_id in self.active_watchers):
             # If watch mode is active, we might allow full analysis?

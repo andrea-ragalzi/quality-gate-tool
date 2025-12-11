@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 from typing import Any, Literal
 
@@ -13,6 +14,8 @@ from pydantic import BaseModel, field_validator
 
 from ...application.services import AnalysisOrchestratorService
 from ...infrastructure.adapters.websocket_notifier import WebSocketNotifier
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -69,6 +72,7 @@ async def run_analysis(
     request: RunAnalysisRequest,
     service: AnalysisOrchestratorService = Depends(get_analysis_service),  # noqa: B008
 ) -> dict[str, str]:
+    logger.info(f"Received run_analysis request for project: {request.project_id}")
     # STATUS-001: Invalid Project ID (Mock check for now, ideally check DB)
     if request.project_id == "99999":
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Project not found")

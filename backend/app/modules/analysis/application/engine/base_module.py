@@ -4,7 +4,11 @@ All analysis modules must implement this interface
 """
 
 import asyncio
+import base64
+import contextlib
+import gzip
 import logging
+import time
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Literal
@@ -82,44 +86,161 @@ class AnalysisModule(ABC):
             await self.ws_manager.send_log(self.module_id, f"$ {cmd_str}")
 
             # Execute subprocess with real-time streaming and proper limits
+            # Start process with decoupled I/O
+            # Use DEVNULL for stdin to prevent hanging on interactive prompts
+            logger.info(f"[{self.module_id}] Starting subprocess: {cmd_str}")
             process = await asyncio.create_subprocess_exec(
                 *cmd,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
+                stdin=asyncio.subprocess.DEVNULL,
                 cwd=str(self.project_path),
                 limit=1024 * 64,  # 64KB buffer limit to prevent memory bloat
             )
+            logger.info(f"[{self.module_id}] Subprocess started with PID: {process.pid}")
 
             # Capture output for summary
             stdout_chunks: list[str] = []
             stderr_chunks: list[str] = []
 
-            # Stream stdout in real-time
-            async def stream_stdout() -> None:
-                if process and process.stdout:
-                    while True:
-                        chunk = await process.stdout.read(64)
-                        if not chunk:
-                            break
-                        decoded = chunk.decode("utf-8", errors="replace")
-                        stdout_chunks.append(decoded)
-                        await self.ws_manager.send_stream(self.module_id, decoded)
+            # Decoupled I/O: Queue for log streaming
+            # Unbounded (or large) queue to prevent reader from blocking on network
+            log_queue: asyncio.Queue[str | None] = asyncio.Queue()
 
-            # Stream stderr in real-time
-            async def stream_stderr() -> None:
-                if process and process.stderr:
-                    while True:
-                        chunk = await process.stderr.read(64)
-                        if not chunk:
-                            break
-                        decoded = chunk.decode("utf-8", errors="replace")
-                        stderr_chunks.append(decoded)
-                        await self.ws_manager.send_stream(self.module_id, decoded)
+            async def stream_reader(stream: asyncio.StreamReader, chunks_list: list[str]) -> None:
+                """Reads from pipe and puts into queue immediately"""
+                if not stream:
+                    return
+                while True:
+                    chunk = await stream.read(8192)
+                    if not chunk:
+                        break
+                    logger.debug(f"[{self.module_id}] Read {len(chunk)} bytes from pipe")
+                    decoded = chunk.decode("utf-8", errors="replace")
+                    chunks_list.append(decoded)
+                    await log_queue.put(decoded)
 
-            # Run both streams concurrently and wait for process
+            async def stream_sender() -> None:
+                """Consumes from queue and sends via WebSocket with throttling and compression"""
+                buffer: list[str] = []
+                buffer_size = 0
+                batch_start_time = 0.0
+
+                async def send_buffer(trigger: str) -> None:
+                    nonlocal buffer, buffer_size
+                    if not buffer:
+                        return
+
+                    raw_text = "".join(buffer)
+                    logger.debug(f"[{self.module_id}] Sending batch of {len(raw_text)} bytes. Trigger: {trigger}")
+
+                    # Compress if larger than 1KB
+                    if len(raw_text) > 1024:
+                        try:
+                            compressed = gzip.compress(raw_text.encode("utf-8"))
+                            b64_encoded = base64.b64encode(compressed).decode("ascii")
+                            await self.ws_manager.send_stream(self.module_id, b64_encoded, encoding="gzip_base64")
+                        except Exception as e:
+                            logger.error(f"Compression failed: {e}, sending raw")
+                            await self.ws_manager.send_stream(self.module_id, raw_text)
+                    else:
+                        await self.ws_manager.send_stream(self.module_id, raw_text)
+
+                    buffer = []
+                    buffer_size = 0
+                    logger.debug(f"[{self.module_id}] Buffer reset after send")
+
+                while True:
+                    try:
+                        if not buffer:
+                            # If buffer is empty, wait indefinitely for the first chunk
+                            # This avoids busy looping when idle
+                            chunk = await log_queue.get()
+                            batch_start_time = time.time()
+                        else:
+                            # If buffer has data, enforce 100ms max latency
+                            elapsed = time.time() - batch_start_time
+                            timeout = max(0.1 - elapsed, 0.01)
+                            chunk = await asyncio.wait_for(log_queue.get(), timeout=timeout)
+
+                        if chunk is None:
+                            if buffer:
+                                await send_buffer("Final Flush")
+                            log_queue.task_done()
+                            break
+
+                        buffer.append(chunk)
+                        buffer_size += len(chunk)
+
+                        if buffer_size > 32768:
+                            await send_buffer("Size Limit")
+
+                        log_queue.task_done()
+
+                    except TimeoutError:
+                        # Timeout reached (100ms since first chunk in batch), flush
+                        if buffer:
+                            await send_buffer("Time Limit")
+
+            # Start sender task
+            sender_task = asyncio.create_task(stream_sender())
+
+            # Run readers in background tasks
+            stdout_reader = asyncio.create_task(stream_reader(process.stdout, stdout_chunks))
+            stderr_reader = asyncio.create_task(stream_reader(process.stderr, stderr_chunks))
+
             try:
-                await asyncio.gather(stream_stdout(), stream_stderr(), process.wait())
+                # Wait for process to exit OR readers to fail
+                # We wrap process.wait() in a task to wait for it alongside readers
+                process_task = asyncio.create_task(process.wait())
+
+                # We wait for the FIRST completion.
+                # If process finishes, we then wait for readers to drain.
+                # If a reader fails (crashes), we abort immediately to prevent deadlock.
+                logger.info(f"[{self.module_id}] Waiting for process or readers...")
+                done, pending = await asyncio.wait(
+                    [process_task, stdout_reader, stderr_reader],
+                    return_when=asyncio.FIRST_COMPLETED,
+                )
+                logger.info(f"[{self.module_id}] Wait finished. Done: {len(done)}, Pending: {len(pending)}")
+
+                # Check for failures in completed tasks
+                for task in done:
+                    if task.exception():
+                        logger.error(f"[{self.module_id}] Task failed with exception: {task.exception()}")
+                        # If any task failed, re-raise the exception to abort execution
+                        raise task.exception()
+
+                # If process is not done, it means a reader finished (EOF) without error.
+                # This implies the process closed the pipe but is still running.
+                # We should continue waiting for the process.
+                if process_task not in done:
+                    logger.info(f"[{self.module_id}] Process still running, waiting for it...")
+                    await process_task
+                    logger.info(f"[{self.module_id}] Process finished.")
+
+                # Process is done (or was done in the first place).
+                # Now ensure readers finish draining (with timeout)
+                try:
+                    logger.info(f"[{self.module_id}] Draining readers...")
+                    await asyncio.wait_for(asyncio.gather(stdout_reader, stderr_reader), timeout=5.0)
+                    logger.info(f"[{self.module_id}] Readers drained successfully.")
+                except TimeoutError:
+                    logger.warning(f"[{self.module_id}] Readers timed out (pipes kept open?), cancelling...")
+                    stdout_reader.cancel()
+                    stderr_reader.cancel()
+                    with contextlib.suppress(asyncio.CancelledError):
+                        await asyncio.gather(stdout_reader, stderr_reader)
+
             except asyncio.CancelledError:
+                # Cancel readers
+                stdout_reader.cancel()
+                stderr_reader.cancel()
+                with contextlib.suppress(asyncio.CancelledError):
+                    await asyncio.gather(stdout_reader, stderr_reader)
+
+                # Ensure we clean up sender if cancelled
+                sender_task.cancel()
                 logger.warning(f"[{self.module_id}] Module execution cancelled")
                 if process and process.returncode is None:
                     try:
@@ -134,7 +255,12 @@ class AnalysisModule(ABC):
                         logger.error(f"[{self.module_id}] Failed to kill process: {e}")
                 raise
 
+            # Signal sender to stop and wait for it
+            await log_queue.put(None)
+            await sender_task
+
             self.exit_code = process.returncode
+            logger.info(f"[{self.module_id}] Process finished with exit code {self.exit_code}")
 
             # Determine status
             self.status = "PASS" if self.exit_code == 0 else "FAIL"
@@ -167,14 +293,15 @@ class AnalysisModule(ABC):
             await self.ws_manager.send_end(self.module_id, "FAIL", "🛑 Execution cancelled")
             raise
         except Exception as e:
-            logger.error(f"Module {self.module_id} failed: {e}")
+            logger.error(f"Module {self.module_id} failed: {e}", exc_info=True)
             self.status = "FAIL"
             await self.ws_manager.send_error(self.module_id, f"Exception: {str(e)}")
+            await self.ws_manager.send_end(self.module_id, "FAIL", f"Exception: {str(e)}")
             return "FAIL"
         finally:
             # CRITICAL: Ensure process is properly terminated and cleaned up
             if process and process.returncode is None:
-                logger.info(f"🛑 Terminating process for {self.module_id}...")
+                logger.info(f"🛑 Terminating process for {self.module_id} (in finally block)...")
                 try:
                     process.terminate()
                     # Give it a short moment to die gracefully
@@ -187,3 +314,5 @@ class AnalysisModule(ABC):
                     except Exception as e:
                         logger.error(f"Failed to kill process: {e}")
                 logger.info(f"✅ Process for {self.module_id} terminated")
+            else:
+                logger.debug(f"[{self.module_id}] Cleanup: Process already finished.")
