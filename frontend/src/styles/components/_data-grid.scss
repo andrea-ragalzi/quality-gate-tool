@@ -1,0 +1,124 @@
+@use "../abstracts/variables" as vars;
+@use "../abstracts/mixins" as mix;
+
+.data-grid {
+  width: 100%;
+  border-collapse: collapse;
+  color: vars.$matrix-green;
+  font-family: vars.$font-matrix;
+  font-size: 0.9rem;
+
+  &__container {
+    overflow-x: auto;
+    border: 1px solid vars.$matrix-green;
+    background: rgba(vars.$matrix-black, 0.8);
+    @include mix.box-glow(vars.$matrix-green, 5px);
+  }
+
+  thead {
+    background-color: vars.$matrix-green-dark;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+
+    th {
+      padding: 12px 16px;
+      text-align: left;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: vars.$matrix-black;
+      border-bottom: 2px solid vars.$matrix-green;
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.2s;
+      white-space: nowrap;
+
+      &:hover {
+        background-color: vars.$matrix-green;
+      }
+    }
+  }
+
+  tbody {
+    tr {
+      transition: background-color 0.2s;
+
+      // Odd Rows
+      &:nth-child(odd) {
+        background-color: rgba(26, 26, 29, 0.2);
+      }
+
+      // Even Rows
+      &:nth-child(even) {
+        background-color: rgba(26, 26, 29, 0.5);
+      }
+
+      &:hover {
+        background-color: rgba(vars.$matrix-green, 0.1);
+      }
+
+      td {
+        padding: 10px 16px;
+        border-bottom: 1px solid rgba(vars.$matrix-green, 0.2);
+        vertical-align: middle;
+      }
+    }
+  }
+
+  // Status Colors
+  &__status {
+    font-weight: bold;
+    text-transform: uppercase;
+
+    &--error {
+      color: vars.$matrix-red;
+      @include mix.text-glow(vars.$matrix-red, 2px);
+    }
+
+    &--warning {
+      color: vars.$matrix-yellow;
+      @include mix.text-glow(vars.$matrix-yellow, 2px);
+    }
+
+    &--info {
+      color: vars.$matrix-cyan;
+      @include mix.text-glow(vars.$matrix-cyan, 2px);
+    }
+
+    &--complexity {
+      color: #ff66ff;
+      @include mix.text-glow(#ff66ff, 2px);
+    }
+  }
+
+  // Sort Icons
+  &__sort-icon {
+    display: inline-block;
+    margin-left: 8px;
+    vertical-align: middle;
+    opacity: 0.7;
+  }
+
+  // Filter Inputs
+  &__filter-input {
+    width: 100%;
+    background: rgba(vars.$matrix-black, 0.5);
+    border: 1px solid rgba(vars.$matrix-black, 0.3);
+    color: vars.$matrix-black;
+    padding: 4px 8px;
+    margin-top: 4px;
+    font-family: vars.$font-matrix;
+    font-size: 0.8rem;
+
+    &::placeholder {
+      color: rgba(vars.$matrix-black, 0.6);
+    }
+
+    &:focus {
+      outline: none;
+      border-color: vars.$matrix-black;
+      background: rgba(vars.$matrix-black, 0.1);
+    }
+  }
+}

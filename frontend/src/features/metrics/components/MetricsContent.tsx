@@ -1,14 +1,5 @@
 import React, { useState } from "react";
-import {
-  Tabs,
-  Group,
-  Button,
-  Paper,
-  ScrollArea,
-  Box,
-  Badge,
-  Code,
-} from "@mantine/core";
+import { Tabs, Group, Button, Code } from "@mantine/core";
 import {
   IconTable,
   IconFileText,
@@ -17,7 +8,6 @@ import {
 } from "@tabler/icons-react";
 import { Finding } from "../types";
 import {
-  formatDate,
   copyToClipboard,
   serializeTable,
   serializeJSON,
@@ -25,6 +15,7 @@ import {
   serializeTOON,
 } from "../utils";
 import classes from "./MetricsContent.module.css";
+import { DataGrid } from "./DataGrid";
 
 interface MetricsContentProps {
   filteredFindings: Finding[];
@@ -95,105 +86,7 @@ export const MetricsContent: React.FC<MetricsContentProps> = ({
       </Group>
 
       <Tabs.Panel value="table">
-        <Paper
-          p="md"
-          style={{
-            backgroundColor: "rgba(13, 13, 13, 0.8)", // Matching matrix-black with opacity
-            border: `1px solid ${matrixGreen}`,
-          }}
-        >
-          <ScrollArea h="calc(100vh - 200px)">
-            <Box style={{ overflowX: "auto" }}>
-              <table
-                style={{
-                  width: "100%",
-                  borderCollapse: "collapse",
-                  color: matrixGreen,
-                }}
-                className="dashboard__panel-text"
-              >
-                <thead>
-                  <tr
-                    style={{
-                      borderBottom: `2px solid ${matrixGreen}`,
-                      textAlign: "left",
-                      position: "sticky",
-                      top: 0,
-                      backgroundColor: "rgba(13, 13, 13, 1)",
-                      zIndex: 1,
-                    }}
-                  >
-                    <th style={{ padding: "8px" }}>TYPE</th>
-                    <th style={{ padding: "8px" }}>TOOL</th>
-                    <th style={{ padding: "8px" }}>LINE</th>
-                    <th style={{ padding: "8px" }}>FILEPATH</th>
-                    <th style={{ padding: "8px" }}>MESSAGE</th>
-                    <th style={{ padding: "8px" }}>TIMESTAMP</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredFindings.map((finding, index) => (
-                    <tr
-                      key={finding.id}
-                      style={{
-                        borderBottom: "1px solid rgba(0, 255, 65, 0.3)",
-                        backgroundColor:
-                          index % 2 === 0
-                            ? "rgba(255, 255, 255, 0.03)"
-                            : "transparent",
-                      }}
-                    >
-                      <td style={{ padding: "8px" }}>
-                        <Badge
-                          variant="outline"
-                          color={
-                            finding.type === "Error"
-                              ? "red"
-                              : finding.type === "Warning"
-                                ? "yellow"
-                                : "blue"
-                          }
-                          style={{ fontFamily: "monospace" }}
-                        >
-                          {finding.type}
-                        </Badge>
-                      </td>
-                      <td style={{ padding: "8px" }}>
-                        <Badge
-                          variant="light"
-                          color="gray"
-                          style={{
-                            fontFamily: "monospace",
-                            color: matrixGreen,
-                          }}
-                        >
-                          {finding.tool}
-                        </Badge>
-                      </td>
-                      <td style={{ padding: "8px" }}>{finding.line}</td>
-                      <td
-                        style={{
-                          padding: "8px",
-                          maxWidth: "200px",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                        }}
-                        title={finding.filepath}
-                      >
-                        {finding.filepath}
-                      </td>
-                      <td style={{ padding: "8px" }}>{finding.message}</td>
-                      <td style={{ padding: "8px" }}>
-                        {formatDate(finding.timestamp)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </Box>
-          </ScrollArea>
-        </Paper>
+        <DataGrid data={filteredFindings} />
       </Tabs.Panel>
 
       <Tabs.Panel value="json">

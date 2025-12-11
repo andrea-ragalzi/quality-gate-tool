@@ -162,12 +162,12 @@ export const useAnalysisStore = create<AnalysisStore>((set, get) => {
         // Ignore errors if we explicitly disconnected (ws is null) or if this event is from an old socket
         if (!ws || event.target !== ws) return;
 
-        console.error("WebSocket Error", event);
         // Only set error state if we were expecting a connection
         if (
           ws.readyState !== WebSocket.CLOSED &&
           ws.readyState !== WebSocket.CLOSING
         ) {
+          console.error("WebSocket Error", event);
           set({
             overallStatus: "ERROR",
             isAnalyzing: false,
