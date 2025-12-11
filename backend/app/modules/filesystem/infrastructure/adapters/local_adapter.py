@@ -1,23 +1,23 @@
 import os
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 from ...domain.ports import FilesystemPort
 
 
 class LocalFilesystemAdapter(FilesystemPort):
-    async def list_directory(self, path: str) -> List[str]:
+    async def list_directory(self, path: str) -> list[str]:
         p = Path(path)
         if not p.exists() or not p.is_dir():
             raise ValueError(f"Path {path} is not a valid directory")
         return [entry.name for entry in os.scandir(path)]
 
-    async def list_directory_details(self, path: str) -> List[Dict[str, Any]]:
+    async def list_directory_details(self, path: str) -> list[dict[str, Any]]:
         p = Path(path)
         if not p.exists() or not p.is_dir():
             raise ValueError(f"Path {path} is not a valid directory")
 
-        results: List[Dict[str, Any]] = []
+        results: list[dict[str, Any]] = []
         for entry in os.scandir(path):
             try:
                 stat = entry.stat()

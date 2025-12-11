@@ -1,34 +1,34 @@
 import json
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from ...domain.entities import Project
 from ...domain.ports import ProjectRepositoryPort
 
 
 class ProjectJSONRepository(ProjectRepositoryPort):
-    def __init__(self, file_path: str = "projects.json"):
+    def __init__(self, file_path: str = "projects.json") -> None:
         self.file_path = Path(file_path)
         self._ensure_file_exists()
 
-    def _ensure_file_exists(self):
+    def _ensure_file_exists(self) -> None:
         if not self.file_path.exists():
             with open(self.file_path, "w") as f:
                 json.dump([], f)
 
-    def _read_data(self) -> List[Dict[str, Any]]:
-        with open(self.file_path, "r") as f:
+    def _read_data(self) -> list[dict[str, Any]]:
+        with open(self.file_path) as f:
             return json.load(f)
 
-    def _write_data(self, data: List[Dict[str, Any]]):
+    def _write_data(self, data: list[dict[str, Any]]) -> None:
         with open(self.file_path, "w") as f:
             json.dump(data, f, indent=2)
 
-    async def get_all(self) -> List[Project]:
+    async def get_all(self) -> list[Project]:
         data = self._read_data()
         return [Project(**item) for item in data]
 
-    async def get_by_id(self, project_id: str) -> Optional[Project]:
+    async def get_by_id(self, project_id: str) -> Project | None:
         projects = await self.get_all()
         for project in projects:
             if project.id == project_id:

@@ -1,16 +1,15 @@
 from abc import ABC, abstractmethod
-from typing import List, Optional
 
 from .entities import Project
 
 
 class ProjectRepositoryPort(ABC):
     @abstractmethod
-    async def get_all(self) -> List[Project]:
+    async def get_all(self) -> list[Project]:
         pass  # pragma: no cover
 
     @abstractmethod
-    async def get_by_id(self, project_id: str) -> Optional[Project]:
+    async def get_by_id(self, project_id: str) -> Project | None:
         pass  # pragma: no cover
 
     @abstractmethod

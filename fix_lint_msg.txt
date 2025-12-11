@@ -1,0 +1,5 @@
+Fix remaining linting errors in filesystem and project modules
+
+- Add missing type annotations (ANN204, ANN202, ANN201)
+- Fix B008 (Depends in default args)
+- Fix B904 (raise from)

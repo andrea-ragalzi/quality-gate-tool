@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -20,17 +20,20 @@ async def get_filesystem_service() -> FilesystemService:
 @router.post("/list")
 async def list_files_detailed(
     request: ListFilesRequest,
-    service: FilesystemService = Depends(get_filesystem_service),
-) -> Dict[str, Any]:
+    service: FilesystemService = Depends(get_filesystem_service),  # noqa: B008
+) -> dict[str, Any]:
     try:
         return await service.list_files_detailed(request.path)
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
 
 
-@router.get("/", response_model=List[str])
-async def list_files(path: str, service: FilesystemService = Depends(get_filesystem_service)):
+@router.get("/", response_model=list[str])
+async def list_files(
+    path: str,
+    service: FilesystemService = Depends(get_filesystem_service),  # noqa: B008
+) -> list[str]:
     try:
         return await service.list_files(path)
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e)) from e
