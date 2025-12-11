@@ -57,7 +57,7 @@ async def test_live_watch_full_flow(tmp_path: Path):
             mode="watch",
             selected_tools=["B_Ruff"],
         )
-        assert result["status"] == "started"
+        assert result["status"] == "accepted"
 
         # Allow time for startup and initial analysis
         await asyncio.sleep(1)

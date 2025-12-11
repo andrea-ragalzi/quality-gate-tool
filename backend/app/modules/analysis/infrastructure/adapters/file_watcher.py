@@ -32,10 +32,12 @@ class CodeChangeHandler(FileSystemEventHandler):
         project_path: str,
         callback: Callable[[list[str]], Coroutine[Any, Any, None]],
         loop: asyncio.AbstractEventLoop,
+        notifier: AnalysisNotifierPort | None = None,
     ) -> None:
         self.project_path = Path(project_path)
         self.callback = callback
         self.loop = loop  # Store event loop reference from main thread
+        self.notifier = notifier
         self.modified_files: set[str] = set()
         self._lock = threading.Lock()  # Thread safety for shared state
         self.debounce_task: Future[Any] | None = None  # Future from run_coroutine_threadsafe
@@ -44,7 +46,7 @@ class CodeChangeHandler(FileSystemEventHandler):
         self.is_analyzing = False  # Prevent overlapping analysis runs
 
     def on_modified(self, event: FileSystemEvent) -> None:
-        logger.debug(f"🔍 Watchdog detected modification: {event.src_path} (is_dir: {event.is_directory})")
+        logger.info(f"🔍 Watchdog detected modification: {event.src_path} (is_dir: {event.is_directory})")
         if event.is_directory:
             return
         path: Any = event.src_path
@@ -53,7 +55,7 @@ class CodeChangeHandler(FileSystemEventHandler):
         self._handle_change(str(path))
 
     def on_created(self, event: FileSystemEvent) -> None:
-        logger.debug(f"🔍 Watchdog detected creation: {event.src_path} (is_dir: {event.is_directory})")
+        logger.info(f"🔍 Watchdog detected creation: {event.src_path} (is_dir: {event.is_directory})")
         if event.is_directory:
             return
         path: Any = event.src_path
@@ -72,6 +74,17 @@ class CodeChangeHandler(FileSystemEventHandler):
                     self.modified_files.add(rel_path)
                     logger.info(f"📝 File changed: {rel_path}")
 
+                    if self.notifier:
+                        asyncio.run_coroutine_threadsafe(
+                            self.notifier.broadcast_raw(
+                                {
+                                    "type": "LOG",
+                                    "message": f"📝 File detected: {rel_path}",
+                                }
+                            ),
+                            self.loop,
+                        )
+
                     # If analysis is running, we just queue the file (it's already in modified_files)
                     # The running _debounced_analysis loop will pick it up.
                     if self.is_analyzing:
@@ -89,7 +102,7 @@ class CodeChangeHandler(FileSystemEventHandler):
                 # File is outside project path
                 pass
         else:
-            logger.debug(f"🗑️ File ignored: {file_path}")
+            logger.info(f"🗑️ File ignored: {file_path}")
 
     def _is_relevant_file(self, file_path: str) -> bool:
         """
@@ -240,7 +253,12 @@ class WatchManager:
 
         # CRITICAL: Pass event loop to handler for thread-safe task scheduling
         loop = asyncio.get_running_loop()
-        handler = CodeChangeHandler(str(self.project_path), callback=self._run_analysis, loop=loop)
+        handler = CodeChangeHandler(
+            str(self.project_path),
+            callback=self._run_analysis,
+            loop=loop,
+            notifier=self.ws_manager,
+        )
 
         # Create and start observer (using PollingObserver for Docker volumes)
         self.observer = PollingObserver()
@@ -294,31 +312,36 @@ class WatchManager:
 
         logger.info("🛑 Stopping live watch mode...")
 
-        # Cancel any active analysis task
-        if self.active_analysis_task:
-            logger.info("🛑 Cancelling active analysis task...")
-            self.active_analysis_task.cancel()
-            try:
-                await self.active_analysis_task
-            except asyncio.CancelledError:
-                pass
-            self.active_analysis_task = None
+        try:
+            # Cancel any active analysis task
+            if self.active_analysis_task:
+                logger.info("🛑 Cancelling active analysis task...")
+                self.active_analysis_task.cancel()
+                try:
+                    await self.active_analysis_task
+                except asyncio.CancelledError:
+                    pass
+                except Exception as e:
+                    logger.error(f"Error cancelling analysis task: {e}")
+                self.active_analysis_task = None
 
-        await self.ws_manager.broadcast_raw({"type": "LOG", "message": "🛑 Live Watch Mode DEACTIVATED"})
+            await self.ws_manager.broadcast_raw({"type": "LOG", "message": "🛑 Live Watch Mode DEACTIVATED"})
 
-        if self.observer:
-            self.observer.stop()
-            try:
-                if self.observer.is_alive():
-                    self.observer.join(timeout=5)
-            except RuntimeError:
-                pass
-            self.observer = None
+            if self.observer:
+                self.observer.stop()
+                try:
+                    if self.observer.is_alive():
+                        self.observer.join(timeout=2.0)
+                except RuntimeError:
+                    pass
+                except Exception as e:
+                    logger.error(f"Error stopping observer: {e}")
+                self.observer = None
 
-        self.is_running = False
-        self.stop_event.set()
-
-        logger.info("✅ Watch mode stopped")
+        finally:
+            self.is_running = False
+            self.stop_event.set()
+            logger.info("✅ Watch mode stopped")
 
     async def _run_analysis(self, files: list[str]) -> None:
         """Callback to run incremental analysis"""

@@ -1,4 +1,4 @@
-from typing import Generator
+from collections.abc import Generator
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -29,7 +29,7 @@ def test_create_project(client: TestClient, mock_service: MagicMock):
     payload = {"name": "P1", "path": "/tmp/p1"}
     response = client.post("/api/v1/projects/", json=payload)
 
-    assert response.status_code == 200
+    assert response.status_code == 201
     assert response.json() == {"id": "p1", "name": "P1", "path": "/tmp/p1"}
     mock_service.create_project.assert_called_once_with("P1", "/tmp/p1")
 

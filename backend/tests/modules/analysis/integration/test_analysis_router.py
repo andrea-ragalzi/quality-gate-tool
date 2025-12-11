@@ -19,7 +19,7 @@ app.include_router(router)
 @pytest.fixture
 def mock_service() -> MagicMock:
     service = AsyncMock(spec=AnalysisOrchestratorService)
-    service.start_analysis.return_value = {"status": "started"}
+    service.start_analysis.return_value = {"status": "accepted", "mode": "full"}
     service.stop_analysis.return_value = {"status": "stopped"}
     return service
 
@@ -49,29 +49,34 @@ def client(mock_service: MagicMock, mock_notifier: MagicMock) -> TestClient:
     return TestClient(app)
 
 
-def test_run_analysis(client: TestClient, mock_service: MagicMock):
-    payload = {"project_path": "/tmp/test", "mode": "full", "selected_tools": ["tool1"]}
+def test_run_analysis(client: TestClient, mock_service: MagicMock, tmp_path):
+    payload = {
+        "project_path": str(tmp_path),
+        "mode": "full",
+        "selected_tools": ["tool1"],
+        "project_id": "test-project-id",
+    }
     response = client.post("/api/run-analysis", json=payload)
 
-    assert response.status_code == 200
-    assert response.json() == {"status": "started"}
+    assert response.status_code == 202
+    assert response.json() == {"status": "accepted", "mode": "full"}
 
     mock_service.start_analysis.assert_called_once_with(
-        project_id="default_session",
-        project_path="/tmp/test",
+        project_id="test-project-id",
+        project_path=str(tmp_path),
         mode="full",
         selected_tools=["tool1"],
     )
 
 
 def test_stop_analysis(client: TestClient, mock_service: MagicMock):
-    payload = {"project_path": "/tmp/test"}
+    payload = {"project_path": "/tmp/test", "project_id": "test-project-id"}
     response = client.post("/api/stop-analysis", json=payload)
 
-    assert response.status_code == 200
+    assert response.status_code == 202
     assert response.json() == {"status": "stopped"}
 
-    mock_service.stop_analysis.assert_called_once_with("default_session")
+    mock_service.stop_analysis.assert_called_once_with("test-project-id")
 
 
 def test_websocket_endpoint(client: TestClient, mock_notifier: MagicMock, mock_service: MagicMock):

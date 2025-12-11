@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 
 export type MatrixPhase =
   | "matrix"
@@ -10,6 +10,16 @@ export type MatrixPhase =
 export function useMatrixIntro() {
   const [isMatrixActive, setIsMatrixActive] = useState(true);
   const [phase, setPhase] = useState<MatrixPhase>("matrix");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const hasSeenIntro = sessionStorage.getItem("matrix_intro_seen");
+      if (hasSeenIntro) {
+        setIsMatrixActive(false);
+        setPhase("complete");
+      }
+    }
+  }, []);
 
   const onGlitchStart = useCallback(() => {
     setPhase("glitch");
@@ -26,6 +36,9 @@ export function useMatrixIntro() {
   const onShatterComplete = useCallback(() => {
     setPhase("complete");
     setIsMatrixActive(false);
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("matrix_intro_seen", "true");
+    }
   }, []);
 
   return {

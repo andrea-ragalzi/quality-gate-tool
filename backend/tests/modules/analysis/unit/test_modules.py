@@ -5,7 +5,6 @@ import pytest
 
 from app.modules.analysis.application.engine.base_module import AnalysisModule
 from app.modules.analysis.application.engine.modules import (
-    ESLintComplexityModule,
     ESLintModule,
     LizardModule,
     PyrightModule,
@@ -121,8 +120,9 @@ def test_typescript_module(mock_notifier: MagicMock, tmp_path):
 
 
 def test_eslint_module(mock_notifier: MagicMock, tmp_path):
-    # Create dummy src
+    # Create dummy src and config
     (tmp_path / "src").mkdir()
+    (tmp_path / ".eslintrc.json").touch()
     module = ESLintModule("eslint", "ESLint", str(tmp_path), mock_notifier)
 
     # Command
@@ -161,20 +161,6 @@ def test_eslint_module(mock_notifier: MagicMock, tmp_path):
     # But this is ESLintModule, not ESLintComplexityModule.
     # Wait, let me check modules.py again.
     pass
-
-
-def test_eslint_complexity_module(mock_notifier: MagicMock, tmp_path):
-    (tmp_path / "src").mkdir()
-    module = ESLintComplexityModule("complex", "Complexity", str(tmp_path), mock_notifier)
-
-    # Command
-    cmd = module.get_command()
-    # Check if complexity rule is in the command
-    assert any("complexity" in arg for arg in cmd)
-
-    # Summary
-    json_output = '[{"errorCount": 1, "messages": [{"ruleId": "complexity"}]}]'
-    assert "❌ 1 function(s) exceed complexity 15" in module.get_summary(json_output, "", 1)
 
 
 def test_ruff_module(mock_notifier: MagicMock, tmp_path):
@@ -270,6 +256,7 @@ async def test_base_module_process_termination_on_exception(mock_notifier: Magic
 
 def test_eslint_module_with_files(mock_notifier: MagicMock, tmp_path):
     (tmp_path / "src").mkdir()
+    (tmp_path / ".eslintrc.json").touch()
     module = ESLintModule("eslint", "ESLint", str(tmp_path), mock_notifier)
 
     # Test with JS/TS files
@@ -280,11 +267,12 @@ def test_eslint_module_with_files(mock_notifier: MagicMock, tmp_path):
 
     # Test with no relevant files
     cmd = module.get_command(["readme.md"])
-    assert "src/" in cmd
+    assert cmd == []
 
 
 def test_eslint_module_invalid_json(mock_notifier: MagicMock, tmp_path):
     (tmp_path / "src").mkdir()
+    (tmp_path / ".eslintrc.json").touch()
     module = ESLintModule("eslint", "ESLint", str(tmp_path), mock_notifier)
 
     # Invalid JSON

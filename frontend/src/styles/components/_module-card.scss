@@ -108,6 +108,43 @@
     }
   }
 
+  &--pending {
+    border-color: rgba(128, 128, 128, 0.3);
+    box-shadow: none;
+
+    &:hover {
+      border-color: rgba(128, 128, 128, 0.6);
+      box-shadow: 0 0 10px rgba(128, 128, 128, 0.2);
+    }
+
+    .module-card__title {
+      color: rgba(180, 180, 180, 0.8);
+      text-shadow: none;
+    }
+
+    .module-card__subtitle {
+      color: rgba(128, 128, 128, 0.6);
+    }
+
+    .module-card__icon {
+      color: rgba(128, 128, 128, 0.6);
+      filter: none;
+    }
+
+    .module-card__status {
+      color: rgba(128, 128, 128, 0.6);
+      text-shadow: none;
+    }
+
+    .module-card__progress-bar {
+      background: rgba(128, 128, 128, 0.3);
+    }
+
+    .module-card__header {
+      border-bottom-color: rgba(128, 128, 128, 0.2);
+    }
+  }
+
   &--running {
     border-color: rgba(vars.$matrix-yellow, 0.5);
     box-shadow: none;

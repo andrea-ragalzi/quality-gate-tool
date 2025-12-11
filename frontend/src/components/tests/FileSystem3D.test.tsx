@@ -18,12 +18,16 @@ describe("FileSystem3D", () => {
         path: "/test/path/folder1",
         type: "directory",
         size: 0,
+        isDirectory: true,
+        modified: new Date().toISOString(),
       },
       {
         name: "folder2",
         path: "/test/path/folder2",
         type: "directory",
         size: 0,
+        isDirectory: true,
+        modified: new Date().toISOString(),
       },
     ];
 

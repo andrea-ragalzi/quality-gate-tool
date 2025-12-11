@@ -32,7 +32,7 @@ class AnalysisModule(ABC):
         self.name = name
         self.project_path = Path(project_path)
         self.ws_manager = ws_manager
-        self.status: Literal["PENDING", "RUNNING", "PASS", "FAIL"] = "PENDING"
+        self.status: Literal["PENDING", "RUNNING", "PASS", "FAIL", "SKIPPED"] = "PENDING"
         self.exit_code: int | None = None
         self.config_warning: str | None = None
 
@@ -49,20 +49,25 @@ class AnalysisModule(ABC):
         """Parse command output and return summary string"""
         pass
 
-    async def run(self, files: list[str] | None = None) -> Literal["PASS", "FAIL"]:
+    async def run(self, files: list[str] | None = None) -> Literal["PASS", "FAIL", "SKIPPED"]:
         """
         Execute module with real-time log streaming and RESOURCE CLEANUP
         CRITICAL: Ensures immediate flushing and proper process termination
-        Returns PASS if exit_code == 0, FAIL otherwise
+        Returns PASS if exit_code == 0, FAIL otherwise, SKIPPED if filtered
         """
         process = None
         try:
-            # Send INIT message
+            # Get command first to check for filtering
+            cmd = self.get_command(files)
+
+            if not cmd:
+                logger.info(f"[{self.module_id}] No command to execute (filtered). Skipping.")
+                # Do NOT send END message to preserve previous state in UI
+                return "SKIPPED"
+
+            # Send INIT message only if we are actually running
             await self.ws_manager.send_init(self.module_id)
             self.status = "RUNNING"
-
-            # Get command
-            cmd = self.get_command(files)
 
             # Send configuration warning if any
             if self.config_warning:
@@ -112,7 +117,22 @@ class AnalysisModule(ABC):
                         await self.ws_manager.send_stream(self.module_id, decoded)
 
             # Run both streams concurrently and wait for process
-            await asyncio.gather(stream_stdout(), stream_stderr(), process.wait())
+            try:
+                await asyncio.gather(stream_stdout(), stream_stderr(), process.wait())
+            except asyncio.CancelledError:
+                logger.warning(f"[{self.module_id}] Module execution cancelled")
+                if process and process.returncode is None:
+                    try:
+                        process.terminate()
+                        # Give it a moment to terminate gracefully
+                        try:
+                            await asyncio.wait_for(process.wait(), timeout=2.0)
+                        except TimeoutError:
+                            logger.warning(f"[{self.module_id}] Process did not terminate, killing...")
+                            process.kill()
+                    except Exception as e:
+                        logger.error(f"[{self.module_id}] Failed to kill process: {e}")
+                raise
 
             self.exit_code = process.returncode
 

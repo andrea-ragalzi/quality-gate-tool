@@ -1,5 +1,3 @@
-from typing import Any, Dict, List
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -32,6 +30,7 @@ from app.modules.project.infrastructure.web.router import get_project_service
 from app.modules.project.infrastructure.web.router import router as project_router
 
 app = FastAPI(title="Quality Gate Tool (Modular Monolith)")
+
 
 # Force reload trigger 2
 # CORS
@@ -68,19 +67,10 @@ app.include_router(analysis_router, tags=["Analysis"])
 
 
 @app.get("/")
-async def root():
+async def root() -> dict[str, str]:
     return {"message": "Quality Gate Tool API is running"}
 
 
 @app.get("/health")
-async def health_check():
+async def health_check() -> dict[str, str]:
     return {"status": "healthy"}
-
-
-@app.get("/api/list-projects")
-async def list_projects_legacy(path: str = "/home") -> Dict[str, List[Any]]:
-    """
-    Legacy endpoint for listing projects.
-    Currently returns empty list as frontend logic is disabled.
-    """
-    return {"projects": []}

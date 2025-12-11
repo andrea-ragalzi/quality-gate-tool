@@ -30,7 +30,7 @@ async def test_start_analysis_watch_mode(mock_websocket_notifier: MagicMock):
         result = await service.start_analysis(project_id=project_id, project_path=project_path, mode=mode)
 
         # Assert
-        assert result["status"] == "started"
+        assert result["status"] == "accepted"
         assert result["mode"] == "watch"
         assert project_id in service.active_watchers
 
@@ -58,6 +58,10 @@ async def test_start_analysis_full_mode(mock_websocket_notifier: MagicMock):
         # Act
         await service.start_analysis(project_id=project_id, project_path=project_path, mode=mode)
 
+        import asyncio
+
+        await asyncio.sleep(0.1)
+
         # Assert
         # Verify Orchestrator was initialized and run
         MockOrchestrator.assert_called_once()
@@ -75,6 +79,10 @@ async def test_start_analysis_full_mode_execution(mock_websocket_notifier: Magic
         mock_orchestrator_instance.execute.return_value = {"status": "completed"}
 
         await service.start_analysis(project_id="test_project", project_path="/tmp/test", mode="full")
+
+        import asyncio
+
+        await asyncio.sleep(0.1)
 
         # Verify Orchestrator was initialized and run
         MockOrchestrator.assert_called_once()

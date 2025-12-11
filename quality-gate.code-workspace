@@ -18,7 +18,6 @@
     "python.testing.cwd": "${workspaceFolder:Backend (FastAPI)}",
     "python.defaultInterpreterPath": "${workspaceFolder:Backend (FastAPI)}/.venv/bin/python",
     "playwright.reuseBrowser": true,
-    "playwright.showTrace": false,
-    "liveServer.settings.multiRootWorkspaceName": "Project Root"
+    "playwright.showTrace": false
   }
 }

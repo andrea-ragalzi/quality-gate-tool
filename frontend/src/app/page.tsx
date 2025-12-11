@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import {
   AppShell,
   Title,
@@ -20,51 +21,71 @@ import {
   IconPlayerStop,
   IconSettings,
   IconHistory,
+  IconChartBar,
 } from "@tabler/icons-react";
 import ModuleCard from "@/components/ModuleCard";
 import LogModal from "@/components/LogModal";
 import LoadingModal from "@/components/LoadingModal";
 import MatrixIntro from "@/components/MatrixIntro";
-import { MODULES_CONFIG } from "@/config/modules";
-import { useMatrixIntro } from "@/hooks/useMatrixIntro";
-import { useAnalysisViewModel } from "@/features/analysis/useAnalysisViewModel";
-import { useProjectViewModel } from "@/features/projects/useProjectViewModel";
+import { useUIStore } from "@/stores/useUIStore";
+import { useAnalysisStore } from "@/features/analysis/stores/useAnalysisStore";
+import { useAnalysisMutations } from "@/features/analysis/hooks/useAnalysisMutations";
+import {
+  useProjects,
+  useCreateProject,
+} from "@/features/projects/hooks/useProjects";
+import { useTools } from "@/features/analysis/hooks/useTools";
 
 const FileSystem3D = dynamic(() => import("@/components/FileSystem3D"), {
   ssr: false,
 });
 
 export default function Home() {
-  // Matrix Intro Logic
-  const {
-    phase,
-    isMatrixActive,
-    onGlitchStart,
-    onCrackStart,
-    onShatterStart,
-    onShatterComplete,
-  } = useMatrixIntro();
+  // Tools Data (TanStack Query)
+  const { data: tools = [] } = useTools();
 
-  // Analysis ViewModel
+  // Matrix Intro Logic (Zustand)
+  const { isMatrixActive, matrixPhase, setMatrixPhase, completeMatrixIntro } =
+    useUIStore();
+
+  // Analysis Store (Zustand)
   const {
     moduleLogs,
     overallStatus,
     isAnalyzing,
     isWatching,
     lastSystemMessage,
-    startAnalysis,
-    stopWatch,
-  } = useAnalysisViewModel();
+    projectPath,
+    setProjectPath,
+    // connect, // Moved to ConnectionManager
+    // disconnect // Moved to ConnectionManager
+  } = useAnalysisStore();
 
-  // Project ViewModel
-  const { projects, createProject } = useProjectViewModel();
+  // Analysis Mutations (TanStack Query)
+  const { startAnalysis, stopWatch } = useAnalysisMutations();
+
+  // Project Data (TanStack Query)
+  const { data: projects = [] } = useProjects();
+  const { mutate: createProject } = useCreateProject();
+
+  // Connect WebSocket on mount - REMOVED (Handled globally)
+  /*
+  useEffect(() => {
+    connect();
+    return () => disconnect();
+  }, [connect, disconnect]);
+  */
+
+  // Force stop if no project selected on mount (Safety)
+  useEffect(() => {
+    if (!projectPath && !isWatching) {
+      stopWatch.mutate({ project_path: "", project_id: "default_session" });
+    }
+  }, []);
 
   // Local UI State
   const [timestamp, setTimestamp] = useState("");
   const [workspacePath, setWorkspacePath] = useState("/home");
-  const [projectPath, setProjectPath] = useState(
-    "/home/Workspace/quality-gate-tool",
-  );
   const [selectedDirectory, setSelectedDirectory] = useState<string>("");
   const [numColumns, setNumColumns] = useState(1);
 
@@ -74,9 +95,14 @@ export default function Home() {
   const [modalContent, setModalContent] = useState("");
   const [projectModalOpened, setProjectModalOpened] = useState(false);
   const [settingsOpened, setSettingsOpened] = useState(false);
-  const [selectedTools, setSelectedTools] = useState<string[]>(
-    MODULES_CONFIG.map((m) => m.id),
-  );
+  const [selectedTools, setSelectedTools] = useState<string[]>([]);
+
+  // Initialize selected tools when tools data is loaded
+  useEffect(() => {
+    if (tools && tools.length > 0 && selectedTools.length === 0) {
+      setSelectedTools(tools.map((m) => m.id));
+    }
+  }, [tools]);
 
   // Responsive Columns Logic
   useEffect(() => {
@@ -91,33 +117,29 @@ export default function Home() {
   }, []);
 
   // Distribute modules into columns
-  const activeModules = MODULES_CONFIG.filter((m) =>
-    selectedTools.includes(m.id),
-  );
+  const activeModules = tools.filter((m) => selectedTools.includes(m.id));
   const columns = Array.from({ length: numColumns }, (_, i) =>
     activeModules.filter((_, index) => index % numColumns === i),
   );
 
-  // Loading state for start action (local UI state)
-  const [isStarting, setIsStarting] = useState(false);
-
   // Handlers
   const handleStartWatch = async () => {
+    if (!projectPath.trim()) return; // Prevent start if no project selected
     if (isAnalyzing || isWatching) return;
-    setIsStarting(true);
-    try {
-      await startAnalysis({
-        project_path: projectPath,
-        mode: "watch",
-        selected_tools: selectedTools,
-      });
-    } finally {
-      setIsStarting(false);
-    }
+    startAnalysis.mutate({
+      project_path: projectPath,
+      mode: "watch",
+      selected_tools: selectedTools,
+      project_id: "default_session",
+    });
   };
 
   const handleStopWatch = async () => {
-    await stopWatch();
+    if (stopWatch.isPending) return;
+    stopWatch.mutate({
+      project_path: projectPath,
+      project_id: "default_session",
+    });
   };
 
   const openProjectBrowser = () => {
@@ -126,7 +148,7 @@ export default function Home() {
 
   // View Full Log
   const viewFullLog = (moduleId: string) => {
-    const mod = MODULES_CONFIG.find((m) => m.id === moduleId);
+    const mod = tools.find((m) => m.id === moduleId);
     const log = moduleLogs[moduleId];
 
     if (mod && log) {
@@ -171,12 +193,12 @@ export default function Home() {
     <>
       {isMatrixActive && (
         <MatrixIntro
-          phase={phase}
-          onGlitchStart={onGlitchStart}
-          onCrackStart={onCrackStart}
-          onShatterStart={onShatterStart}
-          onShatterComplete={onShatterComplete}
-          onSkip={onShatterComplete}
+          phase={matrixPhase}
+          onGlitchStart={() => setMatrixPhase("glitch")}
+          onCrackStart={() => setMatrixPhase("crack")}
+          onShatterStart={() => setMatrixPhase("shatter")}
+          onShatterComplete={completeMatrixIntro}
+          onSkip={completeMatrixIntro}
         />
       )}
       <AppShell
@@ -188,14 +210,15 @@ export default function Home() {
         style={{
           zIndex: 1000,
           transform:
-            phase === "complete"
+            matrixPhase === "complete"
               ? "none"
-              : phase === "shatter"
+              : matrixPhase === "shatter"
                 ? "perspective(2000px) translateZ(0) rotateX(0deg)"
                 : "perspective(2000px) translateZ(-10000px) rotateX(30deg)",
-          opacity: phase === "shatter" || phase === "complete" ? 1 : 0,
+          opacity:
+            matrixPhase === "shatter" || matrixPhase === "complete" ? 1 : 0,
           transition:
-            phase === "shatter"
+            matrixPhase === "shatter"
               ? "transform 3s cubic-bezier(0.16, 1, 0.3, 1), opacity 2s ease-in"
               : "none",
           transformOrigin: "center center",
@@ -276,6 +299,17 @@ export default function Home() {
               >
                 Settings
               </Button>
+              <Button
+                component={Link}
+                href="/metrics"
+                leftSection={<IconChartBar size={16} />}
+                size="sm"
+                variant="outline"
+                fullWidth
+                color="green"
+              >
+                Metrics Dashboard
+              </Button>
 
               {/* Recent Projects */}
               {projects.length > 0 && (
@@ -314,8 +348,8 @@ export default function Home() {
               {!isWatching ? (
                 <Button
                   onClick={handleStartWatch}
-                  disabled={!projectPath.trim()}
-                  loading={isStarting}
+                  disabled={!projectPath?.trim() || isAnalyzing}
+                  loading={startAnalysis.isPending}
                   size="lg"
                   fullWidth
                   color="green"
@@ -326,6 +360,7 @@ export default function Home() {
               ) : (
                 <Button
                   onClick={handleStopWatch}
+                  loading={stopWatch.isPending}
                   size="lg"
                   fullWidth
                   color="red"
@@ -422,7 +457,7 @@ export default function Home() {
               setProjectPath(path);
               const name = path.split("/").pop() || "Untitled Project";
               setSelectedDirectory(name);
-              createProject(name, path);
+              createProject({ name, path });
               setProjectModalOpened(false);
             }}
             onClose={() => setProjectModalOpened(false)}
@@ -455,7 +490,7 @@ export default function Home() {
               <Text size="xs" fw={700} tt="uppercase" c="dimmed">
                 Modules
               </Text>
-              {MODULES_CONFIG.map((module) => (
+              {tools.map((module) => (
                 <Checkbox
                   key={module.id}
                   label={module.title}
@@ -491,7 +526,10 @@ export default function Home() {
           </Stack>
         </Modal>
 
-        <LoadingModal opened={isStarting} message="Starting watch mode..." />
+        <LoadingModal
+          opened={startAnalysis.isPending}
+          message="Starting watch mode..."
+        />
       </AppShell>
     </>
   );

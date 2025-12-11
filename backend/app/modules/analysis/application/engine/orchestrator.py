@@ -164,9 +164,10 @@ class AnalysisOrchestrator:
         """
         passes = sum(1 for status in module_results.values() if status == "PASS")
         fails = sum(1 for status in module_results.values() if status == "FAIL")
+        skipped = sum(1 for status in module_results.values() if status == "SKIPPED")
 
         overall_status = "PASS" if fails == 0 else "FAIL"
-        logger.info(f"📊 Final Status: {overall_status} ({passes} passed, {fails} failed)")
+        logger.info(f"📊 Final Status: {overall_status} ({passes} passed, {fails} failed, {skipped} skipped)")
 
         return overall_status
 
@@ -186,12 +187,14 @@ class AnalysisOrchestrator:
                 if files:
                     # Use explicitly provided files (e.g. from Watchdog)
                     modified_files = files
-                    logger.info(f"🔍 Incremental analysis on {len(modified_files)} provided file(s)")
+                    logger.info(f"🔍 Incremental analysis on {len(modified_files)} provided file(s): {modified_files}")
                 else:
                     # Fallback to git diff
                     modified_files = await self.get_modified_files()
                     if modified_files:
-                        logger.info(f"🔍 Incremental analysis on {len(modified_files)} git-detected file(s)")
+                        logger.info(
+                            f"🔍 Incremental analysis on {len(modified_files)} git-detected file(s): {modified_files}"
+                        )
 
             if self.mode == "incremental" and modified_files:
                 await self.ws_manager.broadcast_raw(

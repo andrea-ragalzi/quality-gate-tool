@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { MantineProvider, createTheme, ColorSchemeScript } from "@mantine/core";
 import "@mantine/core/styles.css";
 import "../styles/matrix.scss";
+import { Providers } from "./providers";
 
 // const ibmPlexMono = IBM_Plex_Mono({
 //   weight: ["400", "600", "700"],
@@ -47,7 +48,7 @@ export default function RootLayout({
       </head>
       <body className={`crt terminal-boot`}>
         <MantineProvider theme={theme} defaultColorScheme="dark">
-          {children}
+          <Providers>{children}</Providers>
         </MantineProvider>
       </body>
     </html>

@@ -1,0 +1,27 @@
+.tab {
+  color: var(--matrix-green);
+  border-color: var(--matrix-green);
+}
+
+.tab[data-active] {
+  background-color: rgba(0, 255, 65, 0.2);
+  border-color: var(--matrix-green);
+}
+
+.tab:hover {
+  background-color: rgba(0, 255, 65, 0.1);
+}
+
+.list {
+  border-color: var(--matrix-green);
+}
+
+.button {
+  border-color: var(--matrix-green);
+  color: var(--matrix-green);
+  font-family: monospace;
+}
+
+.button:hover {
+  background-color: rgba(0, 255, 65, 0.2);
+}

@@ -5,7 +5,6 @@ from unittest.mock import MagicMock
 import pytest
 
 from app.modules.analysis.application.engine.modules import (
-    ESLintComplexityModule,
     ESLintModule,
     LizardModule,
     PyrightModule,
@@ -77,12 +76,6 @@ def test_typescript_parity(mock_notifier):
 def test_eslint_parity(mock_notifier):
     frontend_path = WORKSPACE_ROOT / "frontend"
     run_module_check(ESLintModule, "ESLint", frontend_path, mock_notifier)
-
-
-@pytest.mark.integration
-def test_eslint_complexity_parity(mock_notifier):
-    frontend_path = WORKSPACE_ROOT / "frontend"
-    run_module_check(ESLintComplexityModule, "ESLint Complexity", frontend_path, mock_notifier)
 
 
 @pytest.mark.integration

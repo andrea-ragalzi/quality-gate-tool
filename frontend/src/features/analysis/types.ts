@@ -45,10 +45,12 @@ export interface AnalysisState {
   isAnalyzing: boolean;
   isWatching: boolean;
   lastSystemMessage?: string;
+  projectPath: string;
 }
 
 export interface StartAnalysisPayload {
   project_path: string;
   mode: "full" | "incremental" | "watch";
   selected_tools?: string[];
+  project_id: string;
 }

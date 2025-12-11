@@ -136,6 +136,15 @@ describe("ModuleCard (Presentation)", () => {
     );
     const cardRunning = container.querySelector(".module-card");
     expect(cardRunning?.classList.contains("module-card--running")).toBe(true);
+
+    // Rerender with PENDING
+    rerender(
+      <MantineProvider>
+        <ModuleCard {...defaultProps} status="PENDING" />
+      </MantineProvider>,
+    );
+    const cardPending = container.querySelector(".module-card");
+    expect(cardPending?.classList.contains("module-card--pending")).toBe(true);
   });
 
   it("should ensure issue count is rendered within the themed container", () => {
