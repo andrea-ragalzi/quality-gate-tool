@@ -1,9 +1,21 @@
 import type { Metadata } from "next";
 // import { IBM_Plex_Mono } from "next/font/google";
-import { MantineProvider, createTheme, ColorSchemeScript } from "@mantine/core";
+import {
+  MantineProvider,
+  createTheme,
+  ColorSchemeScript,
+  Button,
+  TextInput,
+  Select,
+  Modal,
+  Paper,
+  Badge,
+  Loader,
+} from "@mantine/core";
 import "@mantine/core/styles.css";
 import "../styles/matrix.scss";
 import { Providers } from "./providers";
+import classes from "../styles/base/MantineOverrides.module.scss";
 
 // const ibmPlexMono = IBM_Plex_Mono({
 //   weight: ["400", "600", "700"],
@@ -40,6 +52,48 @@ const theme = createTheme({
       "#1ab031",
       "#00ff41", // --matrix-green
     ],
+  },
+  components: {
+    Button: Button.extend({
+      classNames: {
+        root: classes.buttonRoot,
+      },
+    }),
+    TextInput: TextInput.extend({
+      classNames: {
+        input: classes.inputInput,
+      },
+    }),
+    Select: Select.extend({
+      classNames: {
+        input: classes.inputInput,
+        dropdown: classes.selectDropdown,
+        option: classes.selectOption,
+      },
+    }),
+    Modal: Modal.extend({
+      classNames: {
+        overlay: classes.modalOverlay,
+        content: classes.modalContent,
+        header: classes.modalHeader,
+        title: classes.modalTitle,
+      },
+    }),
+    Paper: Paper.extend({
+      classNames: {
+        root: classes.paperRoot,
+      },
+    }),
+    Badge: Badge.extend({
+      classNames: {
+        root: classes.badgeRoot,
+      },
+    }),
+    Loader: Loader.extend({
+      classNames: {
+        root: classes.loaderRoot,
+      },
+    }),
   },
 });
 

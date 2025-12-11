@@ -1,0 +1,194 @@
+@use "../abstracts/variables" as vars;
+@use "../abstracts/mixins" as mix;
+
+.buttonRoot {
+  @include mix.pixel-border(vars.$matrix-green, 2px);
+  background: rgba(vars.$matrix-green, 0.1) !important;
+  color: vars.$matrix-green !important;
+  font-family: vars.$font-matrix !important;
+  font-weight: bold !important;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(vars.$matrix-green, 0.3);
+    transform: translate(-50%, -50%);
+    transition:
+      width 0.6s,
+      height 0.6s;
+  }
+
+  &:hover {
+    @include mix.box-glow(vars.$matrix-green, 25px);
+    background: rgba(vars.$matrix-green, 0.2) !important;
+    transform: scale(1.05);
+
+    &::before {
+      width: 300px;
+      height: 300px;
+    }
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    @include mix.box-glow(vars.$matrix-green-dark, 5px);
+  }
+}
+
+.inputInput {
+  background: rgba(vars.$matrix-black, 0.8) !important;
+  border: 2px solid rgba(vars.$matrix-green, 0.3) !important;
+  color: vars.$matrix-green !important;
+  font-family: vars.$font-matrix !important;
+  @include mix.text-glow(vars.$matrix-green, 3px);
+
+  &:focus {
+    @include mix.box-glow(vars.$matrix-green, 15px);
+    border-color: vars.$matrix-green !important;
+  }
+
+  &::placeholder {
+    color: rgba(vars.$matrix-green, 0.4);
+  }
+}
+
+.paperRoot {
+  background: rgba(vars.$matrix-dark, 0.7) !important;
+  @include mix.pixel-border(vars.$matrix-green, 2px);
+  @include mix.hologram;
+  backdrop-filter: blur(10px);
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(
+      45deg,
+      transparent 30%,
+      rgba(vars.$matrix-green, 0.1) 50%,
+      transparent 70%
+    );
+    background-size: 200% 200%;
+    animation: paper-shine 3s linear infinite;
+    pointer-events: none;
+    z-index: -1;
+  }
+}
+
+@keyframes paper-shine {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 200% 200%;
+  }
+}
+
+@keyframes hologram-flicker {
+  0%,
+  100% {
+    opacity: 0.95;
+  }
+  50% {
+    opacity: 0.85;
+  }
+}
+
+@keyframes hologram-scan {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 0% 200%;
+  }
+}
+
+.loaderRoot {
+  &::before {
+    content: "";
+    display: block;
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(vars.$matrix-green, 0.3);
+    border-top-color: vars.$matrix-green;
+    border-radius: 50%;
+    animation: matrix-spin 0.8s linear infinite;
+    @include mix.box-glow(vars.$matrix-green, 10px);
+  }
+}
+
+@keyframes matrix-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.badgeRoot {
+  @include mix.pixel-border(vars.$matrix-green, 1px);
+  background: rgba(vars.$matrix-green, 0.2) !important;
+  color: vars.$matrix-green !important;
+  font-family: vars.$font-matrix !important;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.selectDropdown {
+  background: rgba(vars.$matrix-black, 0.95) !important;
+  @include mix.pixel-border(vars.$matrix-green, 2px);
+  backdrop-filter: blur(10px);
+}
+
+.selectOption {
+  color: vars.$matrix-green !important;
+  font-family: vars.$font-matrix !important;
+
+  &:hover {
+    background: rgba(vars.$matrix-green, 0.2) !important;
+  }
+
+  &[data-selected] {
+    background: rgba(vars.$matrix-green, 0.3) !important;
+    @include mix.text-glow(vars.$matrix-green, 5px);
+  }
+}
+
+.modalOverlay {
+  background: rgba(vars.$matrix-black, 0.9) !important;
+  backdrop-filter: blur(5px);
+}
+
+.modalContent {
+  background: rgba(vars.$matrix-dark, 0.95) !important;
+  @include mix.pixel-border(vars.$matrix-green, 3px);
+  @include mix.box-glow(vars.$matrix-green, 30px);
+}
+
+.modalHeader {
+  background: transparent;
+  border-bottom: 2px solid rgba(vars.$matrix-green, 0.3);
+}
+
+.modalTitle {
+  @include mix.text-glow(vars.$matrix-green, 10px);
+  font-family: vars.$font-matrix !important;
+  font-size: 1.5rem;
+  text-transform: uppercase;
+}
