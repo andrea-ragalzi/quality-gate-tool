@@ -1,17 +1,6 @@
 import type { Metadata } from "next";
 // import { IBM_Plex_Mono } from "next/font/google";
-import {
-  MantineProvider,
-  createTheme,
-  ColorSchemeScript,
-  Button,
-  TextInput,
-  Select,
-  Modal,
-  Paper,
-  Badge,
-  Loader,
-} from "@mantine/core";
+import { MantineProvider, createTheme, ColorSchemeScript } from "@mantine/core";
 import "@mantine/core/styles.css";
 import "../styles/matrix.scss";
 import { Providers } from "./providers";
@@ -54,46 +43,46 @@ const theme = createTheme({
     ],
   },
   components: {
-    Button: Button.extend({
+    Button: {
       classNames: {
         root: classes.buttonRoot,
       },
-    }),
-    TextInput: TextInput.extend({
+    },
+    TextInput: {
       classNames: {
         input: classes.inputInput,
       },
-    }),
-    Select: Select.extend({
+    },
+    Select: {
       classNames: {
         input: classes.inputInput,
         dropdown: classes.selectDropdown,
         option: classes.selectOption,
       },
-    }),
-    Modal: Modal.extend({
+    },
+    Modal: {
       classNames: {
         overlay: classes.modalOverlay,
         content: classes.modalContent,
         header: classes.modalHeader,
         title: classes.modalTitle,
       },
-    }),
-    Paper: Paper.extend({
+    },
+    Paper: {
       classNames: {
         root: classes.paperRoot,
       },
-    }),
-    Badge: Badge.extend({
+    },
+    Badge: {
       classNames: {
         root: classes.badgeRoot,
       },
-    }),
-    Loader: Loader.extend({
+    },
+    Loader: {
       classNames: {
         root: classes.loaderRoot,
       },
-    }),
+    },
   },
 });
 

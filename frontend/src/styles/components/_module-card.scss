@@ -2,8 +2,8 @@
 @use "../abstracts/mixins" as mix;
 
 .module-card {
-  background: rgba(vars.$matrix-black, 0.8);
-  border: 1px solid rgba(vars.$matrix-green, 0.3);
+  background: vars.$matrix-dark;
+  border: 1px solid vars.$matrix-green;
   transition: all 0.3s ease;
   position: relative;
   // overflow: hidden; // Removed to allow absolute positioning of expanded content
@@ -17,8 +17,8 @@
   }
 
   &:hover {
-    border-color: vars.$matrix-green;
-    box-shadow: 0 0 15px rgba(vars.$matrix-green, 0.2);
+    border-color: vars.$matrix-green-bright;
+    @include mix.box-glow(vars.$matrix-green-bright, 15px);
     transform: translateY(-2px);
     z-index: 5;
   }
@@ -30,12 +30,12 @@
   }
 
   &--fail {
-    border-color: rgba(vars.$matrix-red, 0.5);
+    border-color: vars.$matrix-red;
     box-shadow: none;
 
     &:hover {
-      border-color: vars.$matrix-red;
-      box-shadow: 0 0 15px rgba(vars.$matrix-red, 0.3);
+      border-color: vars.$matrix-green-bright;
+      @include mix.box-glow(vars.$matrix-green-bright, 15px);
     }
 
     .module-card__title {
@@ -49,7 +49,8 @@
 
     .module-card__icon {
       color: vars.$matrix-red;
-      filter: drop-shadow(0 0 5px rgba(vars.$matrix-red, 0.5));
+      border-color: vars.$matrix-red;
+      @include mix.box-glow(vars.$matrix-red, 10px);
     }
 
     .module-card__summary-text,
@@ -109,12 +110,12 @@
   }
 
   &--pending {
-    border-color: rgba(128, 128, 128, 0.3);
+    border-color: vars.$matrix-green;
     box-shadow: none;
 
     &:hover {
-      border-color: rgba(128, 128, 128, 0.6);
-      box-shadow: 0 0 10px rgba(128, 128, 128, 0.2);
+      border-color: vars.$matrix-green-bright;
+      @include mix.box-glow(vars.$matrix-green-bright, 15px);
     }
 
     .module-card__title {
@@ -127,8 +128,9 @@
     }
 
     .module-card__icon {
-      color: rgba(128, 128, 128, 0.6);
-      filter: none;
+      color: vars.$matrix-green-bright;
+      border-color: vars.$matrix-green-bright;
+      @include mix.box-glow(vars.$matrix-green-bright, 10px);
     }
 
     .module-card__status {
@@ -146,12 +148,12 @@
   }
 
   &--running {
-    border-color: rgba(vars.$matrix-yellow, 0.5);
+    border-color: vars.$matrix-green;
     box-shadow: none;
 
     &:hover {
-      border-color: vars.$matrix-yellow;
-      box-shadow: 0 0 15px rgba(vars.$matrix-yellow, 0.3);
+      border-color: vars.$matrix-green-bright;
+      @include mix.box-glow(vars.$matrix-green-bright, 15px);
     }
 
     .module-card__title {
@@ -165,7 +167,8 @@
 
     .module-card__icon {
       color: vars.$matrix-yellow;
-      filter: drop-shadow(0 0 5px rgba(vars.$matrix-yellow, 0.5));
+      border-color: vars.$matrix-yellow;
+      @include mix.box-glow(vars.$matrix-yellow, 10px);
     }
 
     .module-card__summary-text,
@@ -338,10 +341,26 @@
   }
 
   &__icon {
+    width: 32px;
+    height: 32px;
+    padding: 6px;
+    border-radius: 50%;
+    border: 1px solid vars.$matrix-green;
     color: vars.$matrix-green;
-    filter: drop-shadow(0 0 5px rgba(vars.$matrix-green, 0.5));
-    width: 24px;
-    height: 24px;
+    @include mix.box-glow(vars.$matrix-green, 5px);
+    transition: all 0.3s ease;
+
+    &--pass {
+      border-color: vars.$matrix-green-bright;
+      color: vars.$matrix-green-bright;
+      @include mix.box-glow(vars.$matrix-green-bright, 10px);
+    }
+
+    &--fail {
+      border-color: vars.$matrix-red;
+      color: vars.$matrix-red;
+      @include mix.box-glow(vars.$matrix-red, 10px);
+    }
   }
 
   &__title {
