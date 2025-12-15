@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import Home from "../page";
-import { MantineProvider } from "@mantine/core";
+import { Box, MantineProvider } from "@mantine/core";
 
 // Mock matchMedia
 Object.defineProperty(window, "matchMedia", {
@@ -20,16 +20,28 @@ Object.defineProperty(window, "matchMedia", {
 });
 
 // Mocks
-vi.mock("@/features/analysis/hooks/useTools", () => ({
+vi.mock("@/features/analysis", () => ({
   useTools: () => ({ data: [] }),
+  useAnalysisStore: () => mockAnalysisState,
+  useAnalysisMutations: () => ({
+    startAnalysis: { isPending: false, mutate: vi.fn() },
+    stopWatch: { isPending: false, mutate: vi.fn() },
+  }),
 }));
-vi.mock("@/stores/useUIStore", () => ({
+vi.mock("@/shared", () => ({
   useUIStore: () => ({
     isMatrixActive: false,
     matrixPhase: "complete",
     setMatrixPhase: vi.fn(),
     completeMatrixIntro: vi.fn(),
   }),
+  ErrorBoundary: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
+  MatrixEditor: ({ value }: { value: string }) => (
+    <Box data-testid="matrix-editor">{value}</Box>
+  ),
+  LogModal: () => <Box>MockLogModal</Box>,
 }));
 // Mutable mock state
 let mockAnalysisState = {
@@ -42,35 +54,47 @@ let mockAnalysisState = {
   setProjectPath: vi.fn(),
   connect: vi.fn(),
   disconnect: vi.fn(),
+  _hasHydrated: true,
 };
 
-vi.mock("@/features/analysis/stores/useAnalysisStore", () => ({
-  useAnalysisStore: () => mockAnalysisState,
-}));
-
-vi.mock("@/features/analysis/hooks/useAnalysisMutations", () => ({
-  useAnalysisMutations: () => ({
-    startAnalysis: { isPending: false, mutate: vi.fn() },
-    stopWatch: { isPending: false, mutate: vi.fn() },
-  }),
-}));
-vi.mock("@/features/projects/hooks/useProjects", () => ({
+vi.mock("@/features/projects", () => ({
   useProjects: () => ({ data: [] }),
   useCreateProject: () => ({ mutate: vi.fn() }),
+}));
+
+vi.mock("@/features/metrics", () => ({
+  useMetrics: () => ({
+    filteredFindings: [],
+    selectedTools: [],
+    setSelectedTools: vi.fn(),
+    selectedTypes: [],
+    setSelectedTypes: vi.fn(),
+    query: "",
+    setQuery: vi.fn(),
+    sortOrder: "newest",
+    setSortOrder: vi.fn(),
+    dateRange: { start: null, end: null },
+    setDateRange: vi.fn(),
+  }),
+  MetricsFilterSidebar: () => <Box>MockMetricsFilterSidebar</Box>,
+  DataGrid: () => <Box>MockDataGrid</Box>,
+  serializeJSON: () => "{}",
+  serializeYAML: () => "",
+  serializeTOON: () => "",
 }));
 
 // Mock next/dynamic
 vi.mock("next/dynamic", () => ({
   default: () =>
     function MockComponent() {
-      return <div>MockFileSystem3D</div>;
+      return <Box>MockFileSystemBrowser</Box>;
     },
 }));
 
 // Mock next/link
 vi.mock("next/link", () => ({
   default: ({ children }: { children: React.ReactNode }) => (
-    <div>{children}</div>
+    <Box>{children}</Box>
   ),
 }));
 
@@ -80,7 +104,7 @@ describe("P-UNIT-003: Guard: Button Status Based on State", () => {
       description: "No project, Not analyzing -> Disabled",
       projectPath: "",
       isAnalyzing: false,
-      expectedDisabled: true,
+      expectedDisabled: true, // Changed: button should be disabled when no project path is set
     },
     {
       description: "Has project, Not analyzing -> Enabled",
@@ -122,9 +146,7 @@ describe("P-UNIT-003: Guard: Button Status Based on State", () => {
       // but we keep it to simulate user interaction if the test relied on it.
       // However, since our mock doesn't auto-update on setProjectPath, pre-seeding is key.
       if (projectPath) {
-        const input = screen.getByPlaceholderText(
-          "/projects/quality-gate-test-project",
-        );
+        const input = screen.getByPlaceholderText("/path/to/project");
         fireEvent.change(input, { target: { value: projectPath } });
       }
 

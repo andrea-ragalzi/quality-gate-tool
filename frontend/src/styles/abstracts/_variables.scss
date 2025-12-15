@@ -1,18 +1,19 @@
 // Matrix Theme Variables
 $matrix-green: #00ff41;
 $matrix-green-dark: #008f11;
-$matrix-green-bright: #4dff88;
-$matrix-black: #0d0208;
+$matrix-green-bright: #ccffcc;
+$matrix-text-body: #ccffcc;
+$matrix-black: #0d0d0d;
 $matrix-dark: #1a1a1d;
-$matrix-red: #ff3131;
-$matrix-yellow: #ffff00;
+$matrix-red: #ff3333;
+$matrix-yellow: #ffcc00;
 $matrix-cyan: #00ffff;
 
 // CRT Effects
 $scanline-opacity: 0.15;
-$scanline-width: 2px;
+$scanline-width: 1px;
 $flicker-speed: 0.01s;
-$glow-intensity: 20px;
+$glow-intensity: 1.5rem;
 
 // Animations
 $pulse-duration: 2s;
@@ -20,10 +21,11 @@ $rotate-duration: 3s;
 $glitch-duration: 0.3s;
 
 // Typography
-$font-matrix: "IBM Plex Mono", "Courier New", monospace;
-$font-size-base: 14px;
+$font-matrix: var(--font-jetbrains-mono), "Courier New", monospace;
+$root-font-size: 87.5%;
+$font-size-base: 1rem;
 $font-size-title: 3.5rem;
-$font-size-subtitle: 1.2rem;
+$font-size-subtitle: 1.25rem;
 
 // Spacing
 $spacing-xs: 0.25rem;

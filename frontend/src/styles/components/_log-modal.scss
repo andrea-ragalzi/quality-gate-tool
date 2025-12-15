@@ -3,14 +3,14 @@
 
 .log-modal {
   &__overlay {
-    backdrop-filter: blur(4px);
+    backdrop-filter: blur(0.25rem);
     background: rgba(0, 0, 0, 0.7);
   }
 
   &__content {
     background: vars.$matrix-black;
     border: 1px solid vars.$matrix-green;
-    box-shadow: 0 0 20px rgba(vars.$matrix-green, 0.2);
+    box-shadow: 0 0 1.5rem rgba(vars.$matrix-green, 0.2);
 
     @include mix.crt-screen;
   }
@@ -41,15 +41,15 @@
     padding: vars.$spacing-md;
     color: vars.$matrix-green-bright;
     font-family: monospace;
-    font-size: 12px;
+    font-size: 0.75rem;
     white-space: pre-wrap;
     border: 1px solid rgba(vars.$matrix-green, 0.2);
     margin: vars.$spacing-md;
-    border-radius: 4px;
-    min-height: 300px;
+    border-radius: 0.25rem;
+    min-height: 21.5rem;
 
     &::-webkit-scrollbar {
-      width: 8px;
+      width: 0.5rem;
     }
 
     &::-webkit-scrollbar-track {
@@ -58,7 +58,7 @@
 
     &::-webkit-scrollbar-thumb {
       background: vars.$matrix-green-dark;
-      border-radius: 4px;
+      border-radius: 0.25rem;
     }
   }
 }

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { act } from "@testing-library/react";
-import { useAnalysisStore } from "../stores/useAnalysisStore";
+import { useAnalysisStore } from "../model/useAnalysisStore";
 
 describe("UNIT-001: useAnalysisStore Clean Initialization", () => {
   beforeEach(() => {

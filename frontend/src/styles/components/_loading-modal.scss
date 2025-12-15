@@ -4,7 +4,7 @@
   &__content {
     background: vars.$matrix-black;
     border: 2px solid vars.$matrix-green;
-    box-shadow: 0 0 20px rgba(vars.$matrix-green, 0.3);
+    box-shadow: 0 0 1.5rem rgba(vars.$matrix-green, 0.3);
   }
 
   &__header {
@@ -27,5 +27,10 @@
     color: vars.$matrix-green;
     font-family: monospace;
     opacity: 0.8;
+  }
+
+  // Loader color override
+  &__loader {
+    --loader-color: var(--matrix-green);
   }
 }

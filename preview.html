@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quality Gate Tool - Unified Preview v6</title>
+    <style>
+        :root {
+            --matrix-black: #0d0d0d;
+            --matrix-green: #00ff41;
+            --matrix-green-dim: #008f11;
+            --matrix-green-bright: #ccffcc;
+            --matrix-red: #ff3333;
+            --matrix-yellow: #ffcc00;
+            --matrix-cyan: #00ffff;
+            --font-mono: 'Courier New', Courier, monospace;
+            --sidebar-width: 300px;
+            --header-height: 70px;
+        }
+
+        body {
+            background-color: var(--matrix-black);
+            color: var(--matrix-green);
+            font-family: var(--font-mono);
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Top Header */
+        .top-header {
+            height: var(--header-height);
+            border-bottom: 1px solid var(--matrix-green);
+            background: rgba(0, 20, 0, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            flex-shrink: 0;
+            z-index: 200;
+        }
+
+        .brand {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .brand-title {
+            font-size: 1.2rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .brand-subtitle {
+            font-size: 0.7rem;
+            opacity: 0.7;
+        }
+
+        /* Metrics Summary (Center) */
+        .metrics-summary {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .metric-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: help;
+        }
+
+        .metric-value {
+            font-size: 1.5rem;
+            font-weight: 900;
+            line-height: 1;
+        }
+        .metric-label {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            text-transform: uppercase;
+        }
+
+        .color-err { color: var(--matrix-red); text-shadow: 0 0 5px rgba(255, 51, 51, 0.3); }
+        .color-warn { color: var(--matrix-yellow); text-shadow: 0 0 5px rgba(255, 204, 0, 0.3); }
+        .color-info { color: var(--matrix-green); text-shadow: 0 0 5px rgba(0, 255, 65, 0.3); }
+        .color-cmplx { color: var(--matrix-cyan); text-shadow: 0 0 5px rgba(0, 255, 255, 0.3); }
+
+        /* Global Controls (Right) */
+        .global-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        /* Layout Container */
+        .layout-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Sidebar Base */
+        .sidebar {
+            width: var(--sidebar-width);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            background: rgba(0, 10, 0, 0.9);
+            transition: transform 0.3s ease, width 0.3s ease, padding 0.3s ease;
+            position: relative;
+            z-index: 100;
+        }
+
+        /* Left Sidebar */
+        .sidebar-left {
+            border-right: 1px solid var(--matrix-green-dim);
+        }
+        .sidebar-left.collapsed {
+            width: 0; padding: 20px 0; transform: translateX(-100%); border-right: none;
+        }
+
+        /* Right Sidebar */
+        .sidebar-right {
+            border-left: 1px solid var(--matrix-green-dim);
+        }
+        .sidebar-right.collapsed {
+            width: 0; padding: 20px 0; transform: translateX(100%); border-left: none;
+        }
+
+        /* Toggles */
+        .sidebar-toggle-left {
+            position: absolute; right: -25px; top: 50%; width: 25px; height: 50px;
+            background: var(--matrix-black); border: 1px solid var(--matrix-green); border-left: none;
+            color: var(--matrix-green); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 101;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .sidebar-toggle-right {
+            position: absolute; left: -25px; top: 50%; width: 25px; height: 50px;
+            background: var(--matrix-black); border: 1px solid var(--matrix-green); border-right: none;
+            color: var(--matrix-green); display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 101;
+            border-radius: 5px 0 0 5px;
+        }
+
+        .sidebar-section-title {
+            border-bottom: 1px solid var(--matrix-green);
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: var(--matrix-green-bright);
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Modules Section */
+        .modules-section {
+            border-bottom: 1px solid var(--matrix-green-dim);
+            background: rgba(0, 20, 0, 0.3);
+            transition: max-height 0.3s ease;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .modules-section.expanded { max-height: 280px; }
+        .modules-section.collapsed { max-height: 40px; }
+
+        .modules-header {
+            height: 40px;
+            padding: 0 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            background: rgba(0, 255, 65, 0.05);
+            border-bottom: 1px solid var(--matrix-green-dim);
+        }
+
+        .modules-scroll-container {
+            display: flex;
+            gap: 15px;
+            padding: 15px 20px;
+            overflow-x: auto;
+            white-space: nowrap;
+            scrollbar-width: thin;
+            scrollbar-color: var(--matrix-green) var(--matrix-black);
+        }
+
+        .module-card {
+            min-width: 240px;
+            border: 1px solid var(--matrix-green-dim);
+            padding: 15px;
+            background: rgba(0, 20, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            position: relative;
+        }
+
+        /* View Tabs */
+        .view-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--matrix-green-dim);
+            background: rgba(0, 10, 0, 0.8);
+        }
+
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-right: 1px solid var(--matrix-green-dim);
+            opacity: 0.7;
+            transition: all 0.2s;
+        }
+
+        .tab:hover { opacity: 1; background: rgba(0, 255, 65, 0.1); }
+        .tab.active {
+            opacity: 1;
+            background: var(--matrix-green);
+            color: black;
+            font-weight: bold;
+        }
+
+        /* Content Area */
+        .content-area {
+            flex: 1;
+            overflow: auto;
+            padding: 0;
+            background: rgba(0, 5, 0, 0.9);
+        }
+
+        /* Common UI */
+        .btn {
+            background: transparent;
+            border: 1px solid var(--matrix-green);
+            color: var(--matrix-green);
+            padding: 8px 16px;
+            font-family: var(--font-mono);
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .btn:hover { background: var(--matrix-green); color: black; }
+        .btn-icon { padding: 8px; }
+
+        .btn-danger { border-color: #ff3333; color: #ff3333; }
+        .btn-danger:hover { background: #ff3333; color: black; }
+
+        .input {
+            background: black;
+            border: 1px solid var(--matrix-green-dim);
+            color: var(--matrix-green);
+            padding: 8px;
+            font-family: var(--font-mono);
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .filter-group { margin-bottom: 15px; }
+        .filter-label { font-size: 0.8rem; margin-bottom: 5px; display: block; opacity: 0.8; }
+
+        /* Table */
+        .data-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        .data-table th {
+            position: sticky; top: 0; background: #0d0d0d;
+            text-align: left; border-bottom: 2px solid var(--matrix-green);
+            padding: 10px 20px; color: var(--matrix-green-bright); z-index: 10;
+        }
+        .data-table td { border-bottom: 1px solid var(--matrix-green-dim); padding: 8px 20px; }
+
+        /* Scanlines */
+        .scanlines {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2));
+            background-size: 100% 4px; pointer-events: none; z-index: 9999; opacity: 0.3;
+        }
+    </style>
+</head>
+<body>
+    <div class="scanlines"></div>
+
+    <!-- Top Header -->
+    <header class="top-header">
+        <div class="brand">
+            <span class="brand-title">Quality Gate</span>
+            <span class="brand-subtitle">// TERMINAL v2.0</span>
+        </div>
+
+        <!-- Center: Metrics Summary -->
+        <div class="metrics-summary">
+            <div class="metric-item" title="Total Errors">
+                <span class="metric-value color-err">12</span>
+                <span class="metric-label">ERRORS</span>
+            </div>
+            <div class="metric-item" title="Total Warnings">
+                <span class="metric-value color-warn">5</span>
+                <span class="metric-label">WARNINGS</span>
+            </div>
+            <div class="metric-item" title="Total Info">
+                <span class="metric-value color-info">2</span>
+                <span class="metric-label">INFO</span>
+            </div>
+            <div class="metric-item" title="Average Complexity">
+                <span class="metric-value color-cmplx">4.2</span>
+                <span class="metric-label">CMPLX</span>
+            </div>
+        </div>
+
+        <!-- Right: Controls -->
+        <div class="global-controls">
+            <button class="btn btn-danger">STOP WATCH</button>
+            <button class="btn btn-icon" title="Toggle Settings" onclick="toggleRightSidebar()">⚙️</button>
+        </div>
+    </header>
+
+    <div class="layout-container">
+        <!-- Left Sidebar (Filters) -->
+        <aside class="sidebar sidebar-left" id="sidebar-left">
+            <div class="sidebar-toggle-left" onclick="toggleLeftSidebar()">
+                <span id="toggle-icon-left">◀</span>
+            </div>
+
+            <div class="sidebar-section-title">🔍 VIEW FILTERS</div>
+
+            <div class="filter-group">
+                <label class="filter-label">SEARCH</label>
+                <input type="text" class="input" placeholder="File, message...">
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label">SHOW TOOLS</label>
+                <div style="display: flex; flex-direction: column; gap: 5px;">
+                    <label><input type="checkbox" checked> ESLint</label>
+                    <label><input type="checkbox" checked> Ruff</label>
+                    <label><input type="checkbox" checked> TypeScript</label>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <label class="filter-label">SEVERITY</label>
+                <div style="display: flex; flex-direction: column; gap: 5px;">
+                    <label><input type="checkbox" checked> <span style="color: #ff3333">Error</span></label>
+                    <label><input type="checkbox" checked> <span style="color: #ffcc00">Warning</span></label>
+                    <label><input type="checkbox" checked> Info</label>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <!-- Modules Section -->
+            <div class="modules-section expanded" id="modules-section">
+                <div class="modules-header" onclick="toggleModules()">
+                    <div style="font-weight: bold;">> ACTIVE MODULES (3)</div>
+                    <div id="modules-toggle-icon">▼</div>
+                </div>
+                <div class="modules-scroll-container">
+                    <div class="module-card">
+                        <div style="display: flex; justify-content: space-between;">
+                            <strong>ESLINT</strong>
+                            <span style="color: #ff3333; border: 1px solid #ff3333; padding: 0 4px; font-size: 0.7rem;">FAIL</span>
+                        </div>
+                        <div style="font-size: 1.5rem; font-weight: bold;">12 ERR</div>
+                        <div style="font-size: 0.7rem; opacity: 0.7;">Last scan: 2s ago</div>
+                        <div style="font-size: 0.7rem; margin-top: 5px; border-top: 1px dashed #008f11; padding-top: 5px;">
+                            > src/App.tsx:45<br>> src/utils.ts:12
+                        </div>
+                    </div>
+
+                    <div class="module-card">
+                        <div style="display: flex; justify-content: space-between;">
+                            <strong>RUFF</strong>
+                            <span style="color: var(--matrix-green); border: 1px solid var(--matrix-green); padding: 0 4px; font-size: 0.7rem;">OK</span>
+                        </div>
+                        <div style="font-size: 1.5rem; font-weight: bold;">CLEAN</div>
+                        <div style="font-size: 0.7rem; opacity: 0.7;">Last scan: 2s ago</div>
+                    </div>
+
+                    <div class="module-card">
+                        <div style="display: flex; justify-content: space-between;">
+                            <strong>TSC</strong>
+                            <span style="color: #ffcc00; border: 1px solid #ffcc00; padding: 0 4px; font-size: 0.7rem;">WARN</span>
+                        </div>
+                        <div style="font-size: 1.5rem; font-weight: bold;">3 WARN</div>
+                        <div style="font-size: 0.7rem; opacity: 0.7;">Compiling...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View Tabs -->
+            <div class="view-tabs">
+                <div class="tab active">TABLE</div>
+                <div class="tab">JSON</div>
+                <div class="tab">YAML</div>
+                <div class="tab">TOON</div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>SEVERITY</th>
+                            <th>TOOL</th>
+                            <th>FILE</th>
+                            <th>MESSAGE</th>
+                            <th>LINE</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="severity-error">[ERROR]</td>
+                            <td>ESLint</td>
+                            <td>src/App.tsx</td>
+                            <td>'props' is defined but never used</td>
+                            <td>45</td>
+                        </tr>
+                        <tr>
+                            <td class="severity-warning">[WARN]</td>
+                            <td>TypeScript</td>
+                            <td>src/api/client.ts</td>
+                            <td>Variable 'data' implicitly has an 'any' type</td>
+                            <td>88</td>
+                        </tr>
+                        <!-- More rows... -->
+                    </tbody>
+                </table>
+            </div>
+
+        </main>
+
+        <!-- Right Sidebar (Settings) -->
+        <aside class="sidebar sidebar-right collapsed" id="sidebar-right">
+            <div class="sidebar-toggle-right" onclick="toggleRightSidebar()">
+                <span id="toggle-icon-right">⚙️</span>
+            </div>
+
+            <div class="sidebar-section-title">⚙️ CONFIGURATION</div>
+
+            <!-- Project Selection -->
+            <div style="margin-bottom: 20px;">
+                <label class="filter-label">PROJECT PATH</label>
+                <input type="text" class="input" value="/home/user/projects/my-app" readonly style="margin-bottom: 5px; font-size: 0.8rem; color: #aaa;">
+                <button class="btn" style="width: 100%; justify-content: center;">CHANGE PROJECT</button>
+            </div>
+
+            <!-- Active Tools Config -->
+            <div class="filter-group">
+                <label class="filter-label">ACTIVE MODULES (RUN)</label>
+                <div style="font-size: 0.7rem; opacity: 0.7; margin-bottom: 5px;">Select which tools to execute.</div>
+                <div style="display: flex; flex-direction: column; gap: 5px;">
+                    <label><input type="checkbox" checked style="accent-color: cyan;"> <span style="color: cyan">ESLint</span></label>
+                    <label><input type="checkbox" checked style="accent-color: cyan;"> <span style="color: cyan">Ruff</span></label>
+                    <label><input type="checkbox" checked style="accent-color: cyan;"> <span style="color: cyan">TypeScript</span></label>
+                    <label><input type="checkbox" checked style="accent-color: cyan;"> <span style="color: cyan">Lizard</span></label>
+                </div>
+            </div>
+        </aside>
+    </div>
+
+    <script>
+        function toggleLeftSidebar() {
+            const sidebar = document.getElementById('sidebar-left');
+            const icon = document.getElementById('toggle-icon-left');
+            sidebar.classList.toggle('collapsed');
+            icon.innerText = sidebar.classList.contains('collapsed') ? '▶' : '◀';
+        }
+
+        function toggleRightSidebar() {
+            const sidebar = document.getElementById('sidebar-right');
+            sidebar.classList.toggle('collapsed');
+        }
+
+        function toggleModules() {
+            const section = document.getElementById('modules-section');
+            const icon = document.getElementById('modules-toggle-icon');
+            section.classList.toggle('expanded');
+            section.classList.toggle('collapsed');
+            icon.innerText = section.classList.contains('collapsed') ? '▲' : '▼';
+        }
+    </script>
+</body>
+</html>

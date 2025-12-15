@@ -1,0 +1,1062 @@
+@use "../abstracts/variables" as vars;
+@use "../abstracts/mixins" as mix;
+
+.dashboard {
+  background-color: vars.$matrix-black;
+  color: vars.$matrix-green;
+  font-family: vars.$font-matrix;
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  // CRT scanlines + glow overlay
+  @include mix.crt-screen;
+
+  &__top-header {
+    height: 4.5rem;
+    border-bottom: 1px solid vars.$matrix-green;
+    background: rgba(0, 20, 0, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1.25rem;
+    flex-shrink: 0;
+    z-index: 200;
+  }
+
+  &__brand {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  &__brand-title {
+    font-size: 1.25rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  &__brand-subtitle {
+    font-size: 0.75rem;
+    opacity: 0.7;
+  }
+
+  &__metrics-summary {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+  }
+
+  &__metric {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: help;
+  }
+
+  &__metric-value {
+    font-size: 1.5rem;
+    font-weight: 900;
+    line-height: 1;
+
+    &--err {
+      color: vars.$matrix-red;
+      text-shadow: 0 0 0.25rem rgba(vars.$matrix-red, 0.3);
+    }
+
+    &--warn {
+      color: vars.$matrix-yellow;
+      text-shadow: 0 0 0.25rem rgba(vars.$matrix-yellow, 0.3);
+    }
+
+    &--info {
+      color: vars.$matrix-green;
+      text-shadow: 0 0 0.25rem rgba(vars.$matrix-green, 0.3);
+    }
+
+    &--cmplx {
+      color: vars.$matrix-cyan;
+      text-shadow: 0 0 0.25rem rgba(vars.$matrix-cyan, 0.3);
+    }
+  }
+
+  &__metric-label {
+    font-size: 0.75rem;
+    opacity: 0.7;
+    text-transform: uppercase;
+  }
+
+  &__controls {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  &__layout {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+  }
+
+  &__sidebar {
+    width: 21.5rem;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    background: rgba(0, 10, 0, 0.9);
+    transition:
+      transform 0.3s ease,
+      width 0.3s ease,
+      padding 0.3s ease;
+    position: relative;
+    z-index: 100;
+    flex-shrink: 0;
+
+    &--left {
+      border-right: 1px solid vars.$matrix-green-dark;
+    }
+
+    &--right {
+      border-left: 1px solid vars.$matrix-green-dark;
+    }
+
+    &--collapsed-left {
+      width: 0;
+      padding: 1.5rem 0;
+      transform: translateX(-100%);
+      border-right: none;
+    }
+
+    &--collapsed-right {
+      width: 0;
+      padding: 1.5rem 0;
+      transform: translateX(100%);
+      border-left: none;
+    }
+  }
+
+  &__sidebar-toggle {
+    position: absolute;
+    top: 50%;
+    width: 1.75rem;
+    height: 3.5rem;
+    background: vars.$matrix-black;
+    border: 1px solid vars.$matrix-green;
+    color: vars.$matrix-green;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 101;
+
+    &--left {
+      right: -1.75rem;
+      border-left: none;
+      border-radius: 0 0.5rem 0.5rem 0;
+    }
+
+    &--right {
+      left: -1.75rem;
+      border-right: none;
+      border-radius: 0.5rem 0 0 0.5rem;
+    }
+  }
+
+  &__sidebar-section-title {
+    border-bottom: 1px solid vars.$matrix-green;
+    padding-bottom: 0.25rem;
+    margin-bottom: 0.75rem;
+    font-weight: bold;
+    font-size: 1rem;
+    color: vars.$matrix-green-bright;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  &__main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+  }
+
+  &__modules {
+    border-bottom: 1px solid vars.$matrix-green-dark;
+    background: rgba(0, 20, 0, 0.3);
+    transition: max-height 0.3s ease;
+    overflow: hidden;
+    flex-shrink: 0;
+
+    &--expanded {
+      max-height: 20rem;
+    }
+
+    &--collapsed {
+      max-height: 2.75rem;
+    }
+  }
+
+  &__modules-header {
+    height: 2.75rem;
+    padding: 0 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    background: rgba(vars.$matrix-green, 0.05);
+    border-bottom: 1px solid vars.$matrix-green-dark;
+  }
+
+  &__modules-title {
+    font-weight: bold;
+  }
+
+  &__modules-scroll {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    overflow-x: auto;
+    white-space: nowrap;
+    scrollbar-width: thin;
+    scrollbar-color: vars.$matrix-green vars.$matrix-black;
+  }
+
+  &__module-card {
+    min-width: 17.25rem;
+    cursor: pointer;
+  }
+
+  &__module-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &__module-title {
+    font-weight: bold;
+  }
+
+  &__module-status {
+    padding: 0 0.25rem;
+    font-size: 0.75rem;
+    border: 1px solid;
+    text-transform: uppercase;
+
+    &--fail {
+      color: vars.$matrix-red;
+      border-color: vars.$matrix-red;
+    }
+
+    &--pass {
+      color: vars.$matrix-green;
+      border-color: vars.$matrix-green;
+    }
+
+    &--pending {
+      color: vars.$matrix-yellow;
+      border-color: vars.$matrix-yellow;
+    }
+  }
+
+  &__module-summary-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+  }
+
+  &__module-summary-text {
+    font-size: 0.75rem;
+    opacity: 0.7;
+  }
+
+  &__tabs {
+    display: flex;
+    border-bottom: 1px solid vars.$matrix-green-dark;
+    background: rgba(0, 10, 0, 0.8);
+  }
+
+  &__tab {
+    padding: 0.75rem 1.5rem;
+    cursor: pointer;
+    border-right: 1px solid vars.$matrix-green-dark;
+    opacity: 0.7;
+    transition: all 0.2s;
+
+    &:hover {
+      opacity: 1;
+      background: rgba(vars.$matrix-green, 0.1);
+    }
+
+    &--active {
+      opacity: 1;
+      background: vars.$matrix-green;
+      color: #000;
+      font-weight: bold;
+    }
+  }
+
+  &__content {
+    flex: 1;
+    overflow: auto;
+    padding: 0;
+    background: rgba(0, 5, 0, 0.9);
+  }
+
+  &__table {
+    padding: 1.5rem;
+  }
+
+  &__editor-wrap {
+    height: 100%;
+  }
+
+  // Bottoni: usa le classi globali .btn, .btn--danger, .btn--icon
+  // Vedi _buttons.scss per gli stili base
+
+  &__input {
+    background: #000;
+    border: 1px solid vars.$matrix-green-dark;
+    color: vars.$matrix-green;
+    padding: 0.5rem;
+    font-family: vars.$font-matrix;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  &__input--compact {
+    margin-bottom: 0.25rem;
+    font-size: 0.75rem;
+  }
+
+  &__filter-group {
+    margin-bottom: 1rem;
+  }
+
+  &__filter-label {
+    font-size: 0.75rem;
+    margin-bottom: 0.25rem;
+    display: block;
+    opacity: 0.8;
+  }
+
+  &__status-indicator {
+    margin-bottom: 1.5rem;
+    border: 1px solid vars.$matrix-green;
+    padding: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  &__status-dot {
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 50%;
+
+    &--watching {
+      background-color: vars.$matrix-red;
+      box-shadow: 0 0 0.5rem vars.$matrix-red;
+    }
+
+    &--ready {
+      background-color: vars.$matrix-green;
+      box-shadow: 0 0 0.5rem vars.$matrix-green;
+    }
+  }
+
+  &__status-text {
+    font-size: 0.75rem;
+    font-weight: bold;
+  }
+
+  &__sidebar-block {
+    margin-bottom: 1.5rem;
+  }
+
+  &__sidebar-subblock {
+    margin-top: 0.75rem;
+  }
+
+  &__helper-text {
+    font-size: 0.75rem;
+    opacity: 0.7;
+    margin-bottom: 0.25rem;
+  }
+
+  &__checkbox-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+}
+
+// ===========================================
+// DASHBOARD (single source of truth)
+// ===========================================
+
+// ===========================================
+// SCANLINES
+// ===========================================
+
+.scanlines {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0),
+    rgba(255, 255, 255, 0) 50%,
+    rgba(0, 0, 0, 0.2) 50%,
+    rgba(0, 0, 0, 0.2)
+  );
+  background-size: 100% 4px;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.3;
+}
+
+// ===========================================
+// TOP HEADER
+// ===========================================
+
+.top-header {
+  height: 4.5rem;
+  border-bottom: 1px solid vars.$matrix-green;
+  background: rgba(0, 20, 0, 0.95);
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  column-gap: 1.25rem;
+  align-items: center;
+  padding: 0 1.25rem;
+  flex-shrink: 0;
+  z-index: 200;
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  justify-self: start;
+}
+
+.brand-title {
+  font-size: 1.25rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.brand-subtitle {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+// ===========================================
+// METRICS SUMMARY
+// ===========================================
+
+.metrics-summary {
+  display: flex;
+  gap: 2rem;
+  align-items: center;
+  justify-self: center;
+  min-width: 0;
+}
+
+.metric-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: help;
+}
+
+.metric-value {
+  font-size: 1.5rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.metric-label {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  text-transform: uppercase;
+}
+
+.color-err {
+  color: vars.$matrix-red;
+  text-shadow: 0 0 0.25rem rgba(vars.$matrix-red, 0.3);
+}
+
+.color-warn {
+  color: vars.$matrix-yellow;
+  text-shadow: 0 0 0.25rem rgba(vars.$matrix-yellow, 0.3);
+}
+
+.color-info {
+  color: vars.$matrix-green;
+  text-shadow: 0 0 0.25rem rgba(vars.$matrix-green, 0.3);
+}
+
+.color-cmplx {
+  color: vars.$matrix-cyan;
+  text-shadow: 0 0 0.25rem rgba(vars.$matrix-cyan, 0.3);
+}
+
+// ===========================================
+// GLOBAL CONTROLS
+// ===========================================
+
+.global-controls {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-self: end;
+}
+
+// ===========================================
+// LAYOUT CONTAINER
+// ===========================================
+
+.layout-container {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+}
+
+// ===========================================
+// SIDEBAR BASE
+// ===========================================
+
+.sidebar {
+  width: 18.75rem;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  background: rgba(0, 10, 0, 0.9);
+  transition:
+    transform 0.3s ease,
+    width 0.3s ease,
+    padding 0.3s ease;
+  position: relative;
+  z-index: 100;
+  flex-shrink: 0;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.sidebar-host {
+  position: relative;
+  flex-shrink: 0;
+  min-height: 0;
+}
+
+.sidebar-left {
+  border-right: 1px solid vars.$matrix-green-dark;
+}
+
+.sidebar-left.collapsed {
+  width: 0;
+  padding: 1.25rem 0;
+  transform: translateX(-100%);
+  border-right: none;
+  overflow: hidden;
+}
+
+.sidebar-right {
+  border-left: 1px solid vars.$matrix-green-dark;
+}
+
+.sidebar-right.collapsed {
+  width: 0;
+  padding: 1.25rem 0;
+  transform: translateX(100%);
+  border-left: none;
+  overflow: hidden;
+}
+
+// ===========================================
+// SIDEBAR TOGGLES
+// ===========================================
+
+.sidebar-toggle-left {
+  position: absolute;
+  right: -1.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.5rem;
+  height: 3.25rem;
+  background: vars.$matrix-black;
+  border: 1px solid vars.$matrix-green;
+  border-left: none;
+  color: vars.$matrix-green;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 101;
+  border-radius: 0 0.25rem 0.25rem 0;
+}
+
+.sidebar-toggle-right {
+  position: absolute;
+  left: -1.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.5rem;
+  height: 3.25rem;
+  background: vars.$matrix-black;
+  border: 1px solid vars.$matrix-green;
+  border-right: none;
+  color: vars.$matrix-green;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 101;
+  border-radius: 0.25rem 0 0 0.25rem;
+}
+
+.sidebar-content {
+  transition: opacity 0.18s ease;
+}
+
+.sidebar-content.closed {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sidebar-content.open {
+  opacity: 1;
+}
+
+.sidebar-section-title {
+  border-bottom: 1px solid vars.$matrix-green;
+  padding-bottom: 0.25rem;
+  margin-bottom: 0.75rem;
+  font-weight: bold;
+  font-size: 1rem;
+  color: vars.$matrix-green-bright;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+// ===========================================
+// MAIN CONTENT AREA
+// ===========================================
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+}
+
+// ===========================================
+// MODULES SECTION
+// ===========================================
+
+.modules-section {
+  border-bottom: 1px solid vars.$matrix-green-dark;
+  background: rgba(0, 20, 0, 0.3);
+  transition: max-height 0.3s ease;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.modules-section.expanded {
+  max-height: 17.5rem;
+}
+
+.modules-section.collapsed {
+  max-height: 2.5rem;
+}
+
+.modules-header {
+  height: 2.5rem;
+  padding: 0 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  background: rgba(vars.$matrix-green, 0.05);
+  border-bottom: 1px solid vars.$matrix-green-dark;
+}
+
+.modules-title {
+  font-weight: bold;
+}
+
+.modules-scroll-container {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: thin;
+  scrollbar-color: vars.$matrix-green vars.$matrix-black;
+}
+
+// ===========================================
+// MODULE CARD
+// ===========================================
+
+.module-card {
+  min-width: 15rem;
+  border: 1px solid vars.$matrix-green-dark;
+  padding: 1rem;
+  background: rgba(0, 20, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  position: relative;
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+
+  &:hover {
+    border-color: vars.$matrix-green;
+    background: rgba(0, 30, 0, 0.6);
+  }
+}
+
+.module-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.module-status {
+  padding: 0 0.25rem;
+  font-size: 0.75rem;
+  border: 1px solid;
+  text-transform: uppercase;
+}
+
+.module-status-fail {
+  color: vars.$matrix-red;
+  border-color: vars.$matrix-red;
+}
+
+.module-status-pass {
+  color: vars.$matrix-green;
+  border-color: vars.$matrix-green;
+}
+
+.module-status-pending {
+  color: vars.$matrix-yellow;
+  border-color: vars.$matrix-yellow;
+}
+
+.module-metric {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.module-timestamp {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+.module-preview {
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+  border-top: 1px dashed vars.$matrix-green-dark;
+  padding-top: 0.25rem;
+}
+
+// ===========================================
+// VIEW TABS
+// ===========================================
+
+.view-tabs {
+  display: flex;
+  border-bottom: 1px solid vars.$matrix-green-dark;
+  background: rgba(0, 10, 0, 0.8);
+  flex-shrink: 0;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.tab {
+  padding: 0.75rem 1.25rem;
+  cursor: pointer;
+  border-right: 1px solid vars.$matrix-green-dark;
+  opacity: 0.7;
+  transition: all 0.2s;
+  flex: 0 0 auto;
+
+  &:hover {
+    opacity: 1;
+    background: rgba(vars.$matrix-green, 0.1);
+  }
+
+  &.active {
+    opacity: 1;
+    background: vars.$matrix-green;
+    color: vars.$matrix-black;
+    font-weight: bold;
+  }
+}
+
+// ===========================================
+// CONTENT AREA
+// ===========================================
+
+.content-area {
+  flex: 1;
+  overflow: auto;
+  padding: 0;
+  background: rgba(0, 5, 0, 0.9);
+  min-height: 0;
+}
+
+// ===========================================
+// FORM ELEMENTS
+// ===========================================
+
+.input {
+  background: #000;
+  border: 1px solid vars.$matrix-green-dark;
+  color: vars.$matrix-green;
+  padding: 0.5rem;
+  font-family: vars.$font-matrix;
+  width: 100%;
+  box-sizing: border-box;
+
+  &::placeholder {
+    color: rgba(vars.$matrix-green, 0.5);
+  }
+
+  &:focus {
+    outline: none;
+    border-color: vars.$matrix-green;
+    box-shadow: 0 0 0.5rem rgba(vars.$matrix-green, 0.3);
+  }
+}
+
+.input-compact {
+  margin-bottom: 0.25rem;
+  font-size: 0.75rem;
+}
+
+.filter-group {
+  margin-bottom: 1rem;
+}
+
+.filter-label {
+  font-size: 0.75rem;
+  margin-bottom: 0.25rem;
+  display: block;
+  opacity: 0.8;
+}
+
+.checkbox-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+
+  label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+
+    input[type="checkbox"] {
+      accent-color: vars.$matrix-green;
+    }
+  }
+}
+
+.checkbox-list-cyan {
+  label input[type="checkbox"] {
+    accent-color: vars.$matrix-cyan;
+  }
+}
+
+.helper-text {
+  font-size: 0.75rem;
+  opacity: 0.7;
+  margin-bottom: 0.25rem;
+}
+
+.config-block {
+  margin-bottom: 1.25rem;
+}
+
+// ===========================================
+// STATUS INDICATOR
+// ===========================================
+
+.status-indicator {
+  margin-bottom: 1.25rem;
+  border: 1px solid vars.$matrix-green;
+  padding: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.status-dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+
+  &.watching {
+    background-color: vars.$matrix-red;
+    box-shadow: 0 0 0.5rem vars.$matrix-red;
+    animation: pulse 1s ease-in-out infinite;
+  }
+
+  &.ready {
+    background-color: vars.$matrix-green;
+    box-shadow: 0 0 0.5rem vars.$matrix-green;
+  }
+}
+
+.status-text {
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+// ===========================================
+// COLOR UTILITIES
+// ===========================================
+
+.color-cyan {
+  color: vars.$matrix-cyan;
+}
+
+// ===========================================
+// PROJECT MODAL
+// ===========================================
+
+.project-modal {
+  .mantine-Modal-content {
+    background: vars.$matrix-black;
+    border: 1px solid vars.$matrix-green;
+  }
+
+  .mantine-Modal-body {
+    padding: 0;
+    height: 100%;
+  }
+}
+
+.project-modal-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  color: vars.$matrix-green;
+  font-family: vars.$font-matrix;
+}
+
+.project-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid vars.$matrix-green;
+  background: rgba(0, 20, 0, 0.95);
+}
+
+.project-modal-title {
+  font-size: 1.25rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin: 0;
+}
+
+.project-modal-form {
+  padding: 1.25rem;
+  border-bottom: 1px solid vars.$matrix-green-dark;
+}
+
+.project-modal-browser {
+  flex: 1;
+  overflow: auto;
+}
+
+.project-modal-footer {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid vars.$matrix-green;
+  background: rgba(0, 20, 0, 0.95);
+}
+
+// ===========================================
+// DATA TABLE
+// ===========================================
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 1rem;
+  font-family: vars.$font-matrix;
+  color: vars.$matrix-green;
+
+  th {
+    position: sticky;
+    top: 0;
+    background: vars.$matrix-black;
+    text-align: left;
+    border-bottom: 2px solid vars.$matrix-green;
+    padding: 0.75rem 1.25rem;
+    color: vars.$matrix-green-bright;
+    z-index: 10;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: bold;
+  }
+
+  td {
+    border-bottom: 1px solid vars.$matrix-green-dark;
+    padding: 0.5rem 1.25rem;
+  }
+
+  tr:hover td {
+    background: rgba(vars.$matrix-green, 0.05);
+  }
+}
+
+.severity-error {
+  color: vars.$matrix-red;
+  font-weight: bold;
+}
+
+.severity-warning {
+  color: vars.$matrix-yellow;
+  font-weight: bold;
+}
+
+.severity-info {
+  color: vars.$matrix-green;
+  font-weight: bold;
+}

@@ -6,23 +6,23 @@
 }
 
 .text-matrix {
-  @include mix.text-glow(vars.$matrix-green, 10px);
+  @include mix.text-glow(vars.$matrix-green, 0.75rem);
 }
 
 .text-matrix-fail {
-  @include mix.text-glow(vars.$matrix-red, 10px);
+  @include mix.text-glow(vars.$matrix-red, 0.75rem);
 }
 
 .text-matrix-warn {
-  @include mix.text-glow(vars.$matrix-yellow, 10px);
+  @include mix.text-glow(vars.$matrix-yellow, 0.75rem);
 }
 
 .box-matrix {
-  @include mix.box-glow(vars.$matrix-green, 20px);
+  @include mix.box-glow(vars.$matrix-green, 1.5rem);
 }
 
 .box-matrix-fail {
-  @include mix.box-glow(vars.$matrix-red, 20px);
+  @include mix.box-glow(vars.$matrix-red, 1.5rem);
 }
 
 .glitch {

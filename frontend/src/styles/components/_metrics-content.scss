@@ -1,0 +1,90 @@
+// ===========================================
+// METRICS CONTENT
+// BEM: metrics-*
+// ===========================================
+
+// Mantine Tabs overrides
+.metrics-tabs {
+  .mantine-Tabs-tab {
+    color: var(--matrix-green);
+    border-color: var(--matrix-green);
+    font-family: var(--font-mono);
+
+    &[data-active] {
+      background-color: rgba(0, 255, 65, 0.2);
+      border-color: var(--matrix-green);
+    }
+
+    &:hover {
+      background-color: rgba(0, 255, 65, 0.1);
+    }
+  }
+
+  .mantine-Tabs-list {
+    border-color: var(--matrix-green);
+  }
+}
+
+// KPI Summary
+.metrics-kpi {
+  font-family: var(--font-mono);
+  color: var(--matrix-green);
+  border-bottom: 1px solid var(--matrix-green);
+  padding-bottom: 1rem;
+
+  &__value {
+    text-shadow: 0 0 0.25rem var(--matrix-green);
+  }
+}
+
+// Action buttons
+.metrics-action {
+  &__btn {
+    font-family: var(--font-mono);
+
+    &--outline {
+      border-color: var(--matrix-green);
+      color: var(--matrix-green);
+
+      &:hover {
+        background-color: rgba(0, 255, 65, 0.2);
+      }
+    }
+
+    &--filled {
+      box-shadow:
+        inset 0 0.25rem 0.25rem rgba(255, 255, 255, 0.3),
+        0 0.25rem 0.5rem rgba(0, 255, 65, 0.3);
+      border: none;
+      font-weight: bold;
+    }
+  }
+}
+
+// Notification override
+.metrics-notification {
+  &.mantine-Notification-root {
+    background-color: #050505;
+    border-color: #00ff41;
+    box-shadow: 0 0 0.75rem rgba(0, 255, 65, 0.3);
+  }
+
+  .mantine-Notification-title {
+    color: #00ff41;
+    font-family: var(--font-mono);
+    font-weight: 900;
+  }
+
+  .mantine-Notification-description {
+    color: #ccffcc;
+    font-family: var(--font-mono);
+  }
+
+  .mantine-Notification-closeButton {
+    color: #00ff41;
+
+    &:hover {
+      background-color: rgba(0, 255, 65, 0.1);
+    }
+  }
+}

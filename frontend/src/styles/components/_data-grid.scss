@@ -4,30 +4,29 @@
 .data-grid {
   width: 100%;
   border-collapse: collapse;
-  color: vars.$matrix-green;
+  color: vars.$matrix-text-body; // Use desaturated green for body text
   font-family: vars.$font-matrix;
-  font-size: 0.9rem;
+  font-size: 1rem;
 
   &__container {
     overflow-x: auto;
     border: 1px solid vars.$matrix-green;
-    background: rgba(vars.$matrix-black, 0.8);
-    @include mix.box-glow(vars.$matrix-green, 5px);
+    background: rgba(0, 5, 0, 0.9);
   }
 
   thead {
-    background-color: vars.$matrix-green-dark;
+    background-color: vars.$matrix-black;
     position: sticky;
     top: 0;
     z-index: 10;
 
     th {
-      padding: 12px 16px;
+      padding: 0.75rem 1.5rem;
       text-align: left;
       font-weight: bold;
       text-transform: uppercase;
       letter-spacing: 1px;
-      color: vars.$matrix-black;
+      color: vars.$matrix-green-bright;
       border-bottom: 2px solid vars.$matrix-green;
       cursor: pointer;
       user-select: none;
@@ -35,7 +34,7 @@
       white-space: nowrap;
 
       &:hover {
-        background-color: vars.$matrix-green;
+        background-color: rgba(vars.$matrix-green, 0.1);
       }
     }
   }
@@ -43,25 +42,27 @@
   tbody {
     tr {
       transition: background-color 0.2s;
-
-      // Odd Rows
-      &:nth-child(odd) {
-        background-color: rgba(26, 26, 29, 0.2);
-      }
-
-      // Even Rows
-      &:nth-child(even) {
-        background-color: rgba(26, 26, 29, 0.5);
-      }
+      border-left: 2px solid transparent; // Default border for status indicator
 
       &:hover {
-        background-color: rgba(vars.$matrix-green, 0.1);
+        background-color: rgba(vars.$matrix-green, 0.05);
+      }
+
+      // Error Row Style (Subtle Indicator)
+      &.data-grid__row--error {
+        border-left-color: vars.$matrix-red;
+      }
+
+      // Warning Row Style (Subtle Indicator)
+      &.data-grid__row--warning {
+        border-left-color: vars.$matrix-yellow;
       }
 
       td {
-        padding: 10px 16px;
-        border-bottom: 1px solid rgba(vars.$matrix-green, 0.2);
+        padding: 0.5rem 1.5rem;
+        border-bottom: 1px solid vars.$matrix-green-dark;
         vertical-align: middle;
+        border-right: none; // Ensure no vertical lines
       }
     }
   }
@@ -73,29 +74,29 @@
 
     &--error {
       color: vars.$matrix-red;
-      @include mix.text-glow(vars.$matrix-red, 2px);
+      @include mix.text-glow(vars.$matrix-red, 0.25rem);
     }
 
     &--warning {
       color: vars.$matrix-yellow;
-      @include mix.text-glow(vars.$matrix-yellow, 2px);
+      @include mix.text-glow(vars.$matrix-yellow, 0.25rem);
     }
 
     &--info {
-      color: vars.$matrix-cyan;
-      @include mix.text-glow(vars.$matrix-cyan, 2px);
+      color: vars.$matrix-green;
+      @include mix.text-glow(vars.$matrix-green, 0.25rem);
     }
 
     &--complexity {
-      color: #ff66ff;
-      @include mix.text-glow(#ff66ff, 2px);
+      color: vars.$matrix-cyan;
+      @include mix.text-glow(vars.$matrix-cyan, 0.25rem);
     }
   }
 
   // Sort Icons
   &__sort-icon {
     display: inline-block;
-    margin-left: 8px;
+    margin-left: 0.5rem;
     vertical-align: middle;
     opacity: 0.7;
   }
@@ -106,10 +107,10 @@
     background: rgba(vars.$matrix-black, 0.5);
     border: 1px solid rgba(vars.$matrix-black, 0.3);
     color: vars.$matrix-black;
-    padding: 4px 8px;
-    margin-top: 4px;
+    padding: 0.25rem 0.5rem;
+    margin-top: 0.25rem;
     font-family: vars.$font-matrix;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
 
     &::placeholder {
       color: rgba(vars.$matrix-black, 0.6);
@@ -120,5 +121,49 @@
       border-color: vars.$matrix-black;
       background: rgba(vars.$matrix-black, 0.1);
     }
+  }
+
+  // Header cell layout
+  &__header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  // Column widths
+  &__th--expand {
+    width: 3.5rem;
+  }
+
+  // Cell truncation
+  &__cell-truncate {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    &--filepath {
+      max-width: 21.5rem;
+    }
+
+    &--message {
+      max-width: 28.5rem;
+    }
+  }
+
+  // Center alignment
+  &__cell--center {
+    text-align: center;
+  }
+
+  // Empty state
+  &__empty-row {
+    text-align: center;
+    padding: 2rem;
+  }
+
+  // Badge spacing
+  &__count-badge {
+    margin-left: 0.25rem;
   }
 }

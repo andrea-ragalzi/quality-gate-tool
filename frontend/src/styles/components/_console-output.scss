@@ -3,7 +3,7 @@
 
 .console-output {
   background: vars.$matrix-black;
-  height: 600px;
+  height: 43rem;
   @include mix.pixel-border(vars.$matrix-green, 2px);
 
   &__header {
@@ -23,13 +23,13 @@
   }
 
   &__scroll-area {
-    height: 520px;
+    height: 37rem;
   }
 
   &__line {
     font-family: monospace;
-    font-size: 13px;
-    margin-bottom: 4px;
+    font-size: 1rem;
+    margin-bottom: 0.25rem;
 
     &--error {
       color: vars.$matrix-red;

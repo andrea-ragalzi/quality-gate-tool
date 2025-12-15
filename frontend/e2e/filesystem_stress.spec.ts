@@ -1,17 +1,35 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("Filesystem Navigation Stress Test", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/");
+    const skipBtn = page.getByRole("button", { name: /JUMP/i });
+    if (await skipBtn.isVisible()) {
+      await skipBtn.click();
+    }
+    await expect(page.getByText("Quality Gate")).toBeVisible({
+      timeout: 15000,
+    });
+  });
+
   test("should navigate deep into directories and verify content", async ({
     page,
   }) => {
     console.log("Starting Filesystem Stress Test");
 
-    // 1. Open App
-    await page.goto("/");
+    // 1. Open App (Handled in beforeEach)
+
+    // Settings sidebar is open by default; only open it if needed
+    const browseButton = page.getByRole("button", { name: "CHANGE PROJECT" });
+    if (!(await browseButton.isVisible())) {
+      await page
+        .getByRole("button", { name: "Toggle Settings", exact: true })
+        .click();
+    }
 
     // 2. Open File Browser
-    // The button has text "Browse"
-    await page.getByRole("button", { name: "Browse" }).click();
+    // The button has text "CHANGE PROJECT"
+    await browseButton.click();
 
     // 3. Wait for file system to load
     const fsContainer = page.locator(".file-system");

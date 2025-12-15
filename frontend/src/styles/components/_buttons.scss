@@ -1,0 +1,87 @@
+@use "../abstracts/variables" as vars;
+
+// ===========================================
+// BUTTONS - Matrix Theme (from preview.html)
+// ===========================================
+
+.btn {
+  background: transparent;
+  border: 1px solid vars.$matrix-green;
+  color: vars.$matrix-green;
+  padding: 0.5rem 1rem;
+  font-family: vars.$font-matrix;
+  cursor: pointer;
+  text-transform: uppercase;
+  font-weight: bold;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.2s;
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+  border-radius: 0;
+
+  &:hover:not(:disabled) {
+    background: vars.$matrix-green;
+    color: vars.$matrix-black;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &:disabled:hover {
+    background: transparent;
+    color: vars.$matrix-green;
+  }
+}
+
+// Icon-only button
+.btn-icon {
+  padding: 0.5rem;
+}
+
+// Full width
+.btn-full {
+  width: 100%;
+}
+
+// Danger variant (red)
+.btn-danger {
+  border-color: vars.$matrix-red;
+  color: vars.$matrix-red;
+
+  &:hover:not(:disabled) {
+    background: vars.$matrix-red;
+    color: vars.$matrix-black;
+  }
+
+  &:disabled:hover {
+    background: transparent;
+    color: vars.$matrix-red;
+  }
+}
+
+// Warning variant (yellow)
+.btn-warning {
+  border-color: vars.$matrix-yellow;
+  color: vars.$matrix-yellow;
+
+  &:hover:not(:disabled) {
+    background: vars.$matrix-yellow;
+    color: vars.$matrix-black;
+  }
+}
+
+// Cyan variant
+.btn-cyan {
+  border-color: vars.$matrix-cyan;
+  color: vars.$matrix-cyan;
+
+  &:hover:not(:disabled) {
+    background: vars.$matrix-cyan;
+    color: vars.$matrix-black;
+  }
+}

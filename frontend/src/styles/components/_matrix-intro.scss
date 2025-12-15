@@ -10,6 +10,10 @@
   z-index: 1010; // Top layer - occludes dashboard (z-index 1000)
   pointer-events: none;
 
+  &--bg-black {
+    background-color: black;
+  }
+
   &__canvas-container {
     width: 100%;
     height: 100%;
@@ -51,7 +55,7 @@
       width: 100%;
       height: 100%;
       opacity: 0.9;
-      filter: drop-shadow(0 0 10px white);
+      filter: drop-shadow(0 0 0.75rem white);
     }
   }
 }
@@ -95,5 +99,49 @@
   100% {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+// Typing overlay
+.matrix-intro__typing-overlay {
+  position: absolute;
+  top: 20%;
+  left: 10%;
+  color: vars.$matrix-green;
+  font-family: monospace;
+  font-size: 2rem;
+  font-weight: bold;
+  text-shadow: 0 0 0.75rem vars.$matrix-green;
+  z-index: 1020;
+}
+
+.matrix-intro__cursor {
+  transition: opacity 0.1s;
+
+  &--hidden {
+    opacity: 0;
+  }
+}
+
+// Skip button
+.matrix-intro__skip-btn {
+  position: absolute;
+  bottom: 1.25rem;
+  right: 1.25rem;
+  background: transparent;
+  border: 1px solid vars.$matrix-green;
+  color: vars.$matrix-green;
+  padding: 0.5rem 1rem;
+  font-family: monospace;
+  cursor: pointer;
+  z-index: 2000;
+  opacity: 0.7;
+  transition: opacity 0.3s;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  pointer-events: auto;
+
+  &:hover {
+    opacity: 1;
   }
 }

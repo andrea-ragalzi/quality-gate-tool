@@ -25,5 +25,49 @@
 :focus-visible {
   outline: 2px solid var(--matrix-green-bright) !important;
   outline-offset: 2px;
-  box-shadow: 0 0 10px var(--matrix-green-bright);
+  box-shadow: 0 0 0.75rem var(--matrix-green-bright);
+}
+
+// Dashboard Input Styles
+.dashboard__input {
+  background-color: rgba(0, 0, 0, 0.7);
+  color: var(--matrix-green);
+  border-color: var(--matrix-green);
+  transition:
+    box-shadow 0.2s,
+    border-color 0.2s;
+  color-scheme: dark;
+
+  &:focus,
+  &:focus-within {
+    box-shadow: 0 0 0.5rem var(--matrix-green);
+    border-color: #00ff41;
+  }
+}
+
+.dashboard__dropdown {
+  background-color: var(--matrix-dark);
+  border-color: var(--matrix-green);
+}
+
+.dashboard__option {
+  color: var(--matrix-green);
+
+  &:hover,
+  &[data-checked],
+  &[data-hovered] {
+    background-color: rgba(0, 255, 65, 0.2);
+  }
+}
+
+.dashboard__pill {
+  background-color: rgba(0, 255, 65, 0.1);
+  color: var(--matrix-green);
+  border: 1px solid var(--matrix-green);
+  font-weight: bold;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background-color: rgba(0, 255, 65, 0.3);
+  }
 }

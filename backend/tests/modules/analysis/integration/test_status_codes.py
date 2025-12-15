@@ -110,6 +110,8 @@ def test_status_code_compliance(scenario, method, endpoint, payload, expected_st
         response = client.post(endpoint, json=payload)
     elif method == "GET":
         response = client.get(endpoint)
+    else:
+        pytest.fail(f"Unsupported HTTP method: {method}")
 
     # Assert Status Code
     assert (

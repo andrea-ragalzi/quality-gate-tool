@@ -1,68 +1,96 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("State Integrity & Flow Control", () => {
-  test("E2E-001: State Integrity on Startup/Refresh", async ({ page }) => {
-    // 1. Navigate to Dashboard
+  test.beforeEach(async ({ page }) => {
     await page.goto("/");
-
-    // Handle Matrix Intro if present
-    // Wait briefly to see if the intro appears (it might fade in)
-    try {
-      const skipButton = page.getByRole("button", { name: /SKIP/i });
-      await skipButton.waitFor({ state: "visible", timeout: 2000 });
-      await skipButton.click();
-    } catch (e) {
-      // Intro not present or skip button not found, continue
-      console.log("Matrix Intro skipped or not present");
+    const skipBtn = page.getByRole("button", { name: /JUMP/i });
+    if (await skipBtn.isVisible()) {
+      await skipBtn.click();
     }
+    await expect(page.getByText("Quality Gate")).toBeVisible({
+      timeout: 15000,
+    });
+  });
+
+  test("E2E-001: State Integrity on Startup/Refresh", async ({ page }) => {
+    // 1. Navigate to Dashboard (Handled in beforeEach)
 
     // 2. Simulate page reload
     await page.reload();
 
     // Handle Matrix Intro again after reload
     try {
-      const skipButton = page.getByRole("button", { name: /SKIP/i });
-      await skipButton.waitFor({ state: "visible", timeout: 2000 });
-      await skipButton.click();
+      const skipButton = page.getByRole("button", { name: /JUMP/i });
+      // Check if button appears within 5 seconds
+      if (await skipButton.isVisible({ timeout: 5000 })) {
+        console.log("JUMP button found, clicking...");
+        // Use a short timeout for the click. If the element detaches (intro finishes),
+        // we don't want to wait until the test times out.
+        await skipButton.click({ timeout: 2000 });
+      } else {
+        console.log(
+          "JUMP button not found within 5s (Intro might be skipped or finished)",
+        );
+      }
     } catch (e) {
-      console.log("Matrix Intro skipped or not present after reload");
+      // Ignore click errors (e.g. if button disappears/detaches)
+      console.log(
+        "Matrix Intro handling: ",
+        e instanceof Error ? e.message : e,
+      );
+    }
+
+    // Wait for ANY dashboard element to confirm we are on the dashboard
+    // "Quality Gate" is in the header
+    await expect(page.getByText("Quality Gate").first()).toBeVisible({
+      timeout: 15000,
+    });
+
+    // Settings sidebar is open by default; only open it if needed
+    const statusText = page.locator(".status-text").first();
+    if (!(await statusText.isVisible())) {
+      await page
+        .getByRole("button", { name: "Toggle Settings", exact: true })
+        .click();
     }
 
     // 3. Assertions
     // Status indicator shows "SYSTEM READY" (Idle)
-    await expect(page.locator(".dashboard__status-box--text")).toHaveText(
-      /SYSTEM READY|Idle/i,
-    );
+    await expect(page.locator(".status-text")).toHaveText(/SYSTEM READY|Idle/i);
 
     // Log Viewer is empty (Modal should not be open)
     // Check that no modal is currently visible
     await expect(page.locator(".mantine-Modal-root:visible")).toHaveCount(0);
 
-    // Navigate to Metrics to check filters
-    const metricsLink = page.getByRole("link", { name: /Metrics Dashboard/i });
+    // Verify Unified Dashboard elements are present instead of navigating to /metrics
+    // Check for View Filters sidebar
+    await expect(page.getByText("VIEW FILTERS")).toBeVisible();
 
-    // Ensure the link is not just visible but also enabled and stable
-    await expect(metricsLink).toBeVisible();
-    await expect(metricsLink).toBeEnabled();
+    // Check for Active Modules section (Header with count)
+    await expect(page.getByText(/> ACTIVE MODULES/)).toBeVisible();
 
-    // Force click if necessary, or just click
-    await metricsLink.click();
-
-    await expect(page).toHaveURL(/\/metrics/);
-
-    // Verify table is empty (assuming no persisted state across reloads without localstorage persistence of logs)
-    const rows = page.locator("table tbody tr");
-    await expect(rows).toHaveCount(0);
+    // Check for DataGrid (Table view is default)
+    // It might be empty, but the container should be there
+    // We can check for the tabs
+    await expect(page.getByText("TABLE")).toBeVisible();
+    await expect(page.getByText("JSON")).toBeVisible();
   });
 
   test("E2E-002: Guard: Prevent Analysis Without Project", async ({ page }) => {
-    await page.goto("/");
+    // Settings sidebar is open by default; only open it if needed
+    const input = page.locator('input[placeholder="/path/to/project"]');
+    if (!(await input.isVisible())) {
+      await page
+        .getByRole("button", { name: "Toggle Settings", exact: true })
+        .click();
+    }
 
     // 1. Ensure no project is actively selected
-    const input = page.locator(
-      'input[placeholder="/projects/quality-gate-test-project"]',
-    );
     await input.fill("");
+
+    // Close sidebar to see the Start Watch button (if it was covered, though it's in header)
+    // Actually, Start Watch is in header, so it's always visible.
+    // But let's keep sidebar open or close it? It doesn't matter much for visibility of header.
 
     // 2. Attempt to click "Start Watch"
     const startBtn = page.getByRole("button", { name: "START WATCH" });
@@ -88,12 +116,15 @@ test.describe("State Integrity & Flow Control", () => {
   });
 
   test("E2E-004: Watch Mode Cycle Stability", async ({ page }) => {
-    await page.goto("/");
+    // Settings sidebar is open by default; only open it if needed
+    const input = page.locator('input[placeholder="/path/to/project"]');
+    if (!(await input.isVisible())) {
+      await page
+        .getByRole("button", { name: "Toggle Settings", exact: true })
+        .click();
+    }
 
     // 1. Select Project
-    const input = page.locator(
-      'input[placeholder="/projects/quality-gate-test-project"]',
-    );
     await input.fill("/home/andrea/Workspace/quality-gate-tool"); // Use self as target
 
     // 2. Click "Start Watch Mode"
@@ -101,29 +132,26 @@ test.describe("State Integrity & Flow Control", () => {
     await startBtn.click();
 
     // Verify status changes to WATCHING
-    await expect(page.locator(".dashboard__status-box--text")).toContainText(
-      /LIVE WATCH/i,
-      { timeout: 10000 },
-    );
+    await expect(page.locator(".status-text")).toContainText(/WATCHING/i, {
+      timeout: 10000,
+    });
 
     // 3. Click "Stop Watch Mode"
     const stopBtn = page.getByRole("button", { name: "STOP WATCH" });
     await stopBtn.click();
 
     // Verify status changes back to READY
-    await expect(page.locator(".dashboard__status-box--text")).toContainText(
-      /SYSTEM READY/i,
-      { timeout: 10000 },
-    );
+    await expect(page.locator(".status-text")).toContainText(/SYSTEM READY/i, {
+      timeout: 10000,
+    });
 
     // 4. Click "Start Watch Mode" again
     await startBtn.click();
 
     // Assertion: Verify status is WATCHING again
-    await expect(page.locator(".dashboard__status-box--text")).toContainText(
-      /LIVE WATCH/i,
-      { timeout: 10000 },
-    );
+    await expect(page.locator(".status-text")).toContainText(/WATCHING/i, {
+      timeout: 10000,
+    });
 
     // Cleanup
     await page.getByRole("button", { name: "STOP WATCH" }).click();

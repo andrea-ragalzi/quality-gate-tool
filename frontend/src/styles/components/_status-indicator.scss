@@ -9,25 +9,25 @@
   &::before {
     content: "";
     display: block;
-    width: 10px;
-    height: 10px;
+    width: 0.75rem;
+    height: 0.75rem;
     border-radius: 50%;
     animation: pulse 2s ease-in-out infinite;
   }
 
   &.status-pass::before {
     background: vars.$matrix-green;
-    @include mix.box-glow(vars.$matrix-green, 8px);
+    @include mix.box-glow(vars.$matrix-green, 0.5rem);
   }
 
   &.status-fail::before {
     background: vars.$matrix-red;
-    @include mix.box-glow(vars.$matrix-red, 8px);
+    @include mix.box-glow(vars.$matrix-red, 0.5rem);
   }
 
   &.status-pending::before {
     background: vars.$matrix-yellow;
-    @include mix.box-glow(vars.$matrix-yellow, 8px);
+    @include mix.box-glow(vars.$matrix-yellow, 0.5rem);
   }
 }
 

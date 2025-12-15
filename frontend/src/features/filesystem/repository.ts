@@ -1,5 +1,5 @@
 import { FileSystemItem } from "./types";
-import { DirectoryListResponseSchema } from "@/schemas/filesystem";
+import { DirectoryListResponseSchema } from "./model/schemas";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 

@@ -1,21 +1,23 @@
 import type { Metadata } from "next";
-// import { IBM_Plex_Mono } from "next/font/google";
+import { JetBrains_Mono } from "next/font/google";
 import { MantineProvider, createTheme, ColorSchemeScript } from "@mantine/core";
+import { Notifications } from "@mantine/notifications";
 import "@mantine/core/styles.css";
-import "../styles/matrix.scss";
+import "@mantine/notifications/styles.css";
+import "../styles/theme.scss";
 import { Providers } from "./providers";
 import classes from "../styles/base/MantineOverrides.module.scss";
+import { UnhandledRejectionGuard } from "./UnhandledRejectionGuard";
 
-// const ibmPlexMono = IBM_Plex_Mono({
-//   weight: ["400", "600", "700"],
-//   subsets: ["latin"],
-//   display: "swap",
-//   variable: "--font-ibm-plex-mono",
-// });
+const jetBrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-jetbrains-mono",
+});
 
 const theme = createTheme({
   primaryColor: "green",
-  fontFamily: "'IBM Plex Mono', 'Courier New', monospace",
+  fontFamily: "var(--font-jetbrains-mono), 'Courier New', monospace",
   colors: {
     dark: [
       "#C1C2C5",
@@ -27,7 +29,7 @@ const theme = createTheme({
       "#25262b",
       "#1a1a1d", // --matrix-dark (Panel BG)
       "#141517",
-      "#0d0208", // --matrix-black (Main BG)
+      "#0d0d0d", // --matrix-black (Main BG)
     ],
     green: [
       "#e6ffee",
@@ -37,7 +39,7 @@ const theme = createTheme({
       "#57e56a",
       "#40e154",
       "#32df49",
-      "#24c53a", // --matrix-green-dark
+      "#008f11", // --matrix-green-dim
       "#1ab031",
       "#00ff41", // --matrix-green
     ],
@@ -101,8 +103,10 @@ export default function RootLayout({
       <head>
         <ColorSchemeScript defaultColorScheme="dark" />
       </head>
-      <body className={`crt terminal-boot`}>
+      <body className={`crt terminal-boot ${jetBrainsMono.variable}`}>
         <MantineProvider theme={theme} defaultColorScheme="dark">
+          <Notifications position="bottom-right" zIndex={2000} />
+          <UnhandledRejectionGuard />
           <Providers>{children}</Providers>
         </MantineProvider>
       </body>

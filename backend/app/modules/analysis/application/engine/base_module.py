@@ -185,31 +185,36 @@ class AnalysisModule(ABC):
             # Start sender task
             sender_task = asyncio.create_task(stream_sender())
 
-            # Run readers in background tasks
-            stdout_reader = asyncio.create_task(stream_reader(process.stdout, stdout_chunks))
-            stderr_reader = asyncio.create_task(stream_reader(process.stderr, stderr_chunks))
+            # Run readers in background tasks (only if streams exist)
+            stdout_reader: asyncio.Task[None] | None = None
+            stderr_reader: asyncio.Task[None] | None = None
+            tasks_to_wait: list[asyncio.Task[int] | asyncio.Task[None]] = [asyncio.create_task(process.wait())]
+            if process.stdout:
+                stdout_reader = asyncio.create_task(stream_reader(process.stdout, stdout_chunks))
+                tasks_to_wait.append(stdout_reader)
+            if process.stderr:
+                stderr_reader = asyncio.create_task(stream_reader(process.stderr, stderr_chunks))
+                tasks_to_wait.append(stderr_reader)
 
             try:
-                # Wait for process to exit OR readers to fail
-                # We wrap process.wait() in a task to wait for it alongside readers
-                process_task = asyncio.create_task(process.wait())
-
                 # We wait for the FIRST completion.
                 # If process finishes, we then wait for readers to drain.
                 # If a reader fails (crashes), we abort immediately to prevent deadlock.
+                process_task = tasks_to_wait[0]  # First task is process.wait()
                 logger.info(f"[{self.module_id}] Waiting for process or readers...")
                 done, pending = await asyncio.wait(
-                    [process_task, stdout_reader, stderr_reader],
+                    tasks_to_wait,
                     return_when=asyncio.FIRST_COMPLETED,
                 )
                 logger.info(f"[{self.module_id}] Wait finished. Done: {len(done)}, Pending: {len(pending)}")
 
                 # Check for failures in completed tasks
                 for task in done:
-                    if task.exception():
-                        logger.error(f"[{self.module_id}] Task failed with exception: {task.exception()}")
+                    exc = task.exception()
+                    if exc:
+                        logger.error(f"[{self.module_id}] Task failed with exception: {exc}")
                         # If any task failed, re-raise the exception to abort execution
-                        raise task.exception()
+                        raise exc
 
                 # If process is not done, it means a reader finished (EOF) without error.
                 # This implies the process closed the pipe but is still running.
@@ -221,23 +226,26 @@ class AnalysisModule(ABC):
 
                 # Process is done (or was done in the first place).
                 # Now ensure readers finish draining (with timeout)
-                try:
-                    logger.info(f"[{self.module_id}] Draining readers...")
-                    await asyncio.wait_for(asyncio.gather(stdout_reader, stderr_reader), timeout=5.0)
-                    logger.info(f"[{self.module_id}] Readers drained successfully.")
-                except TimeoutError:
-                    logger.warning(f"[{self.module_id}] Readers timed out (pipes kept open?), cancelling...")
-                    stdout_reader.cancel()
-                    stderr_reader.cancel()
-                    with contextlib.suppress(asyncio.CancelledError):
-                        await asyncio.gather(stdout_reader, stderr_reader)
+                reader_tasks = [t for t in (stdout_reader, stderr_reader) if t is not None]
+                if reader_tasks:
+                    try:
+                        logger.info(f"[{self.module_id}] Draining readers...")
+                        await asyncio.wait_for(asyncio.gather(*reader_tasks), timeout=5.0)
+                        logger.info(f"[{self.module_id}] Readers drained successfully.")
+                    except TimeoutError:
+                        logger.warning(f"[{self.module_id}] Readers timed out (pipes kept open?), cancelling...")
+                        for t in reader_tasks:
+                            t.cancel()
+                        with contextlib.suppress(asyncio.CancelledError):
+                            await asyncio.gather(*reader_tasks)
 
             except asyncio.CancelledError:
                 # Cancel readers
-                stdout_reader.cancel()
-                stderr_reader.cancel()
+                reader_tasks = [t for t in (stdout_reader, stderr_reader) if t is not None]
+                for t in reader_tasks:
+                    t.cancel()
                 with contextlib.suppress(asyncio.CancelledError):
-                    await asyncio.gather(stdout_reader, stderr_reader)
+                    await asyncio.gather(*reader_tasks)
 
                 # Ensure we clean up sender if cancelled
                 sender_task.cancel()

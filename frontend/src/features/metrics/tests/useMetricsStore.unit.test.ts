@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { act } from "@testing-library/react";
-import { useMetricsStore } from "../stores/useMetricsStore";
-import { METRIC_TYPES, Finding, SortOrder } from "../types";
+import { useMetricsStore } from "../model/useMetricsStore";
+import { METRIC_TYPES, Finding, SortOrder } from "../model/types";
 
 describe("useMetricsStore Parameterized Tests", () => {
   const mockFindings: Finding[] = [
@@ -52,6 +52,7 @@ describe("useMetricsStore Parameterized Tests", () => {
         tools: ["ESLint", "Ruff"],
         types: [...METRIC_TYPES],
         dateRange: { start: null, end: null },
+        query: "",
       },
       sortOrder: "type_desc",
     });
@@ -144,5 +145,16 @@ describe("useMetricsStore Parameterized Tests", () => {
         }
       },
     );
+  });
+
+  describe("P-UNIT-002-D: Filter: Free-text query", () => {
+    it("should filter findings by query against filepath/message", () => {
+      act(() => {
+        useMetricsStore.getState().setFilters({ query: "b.py" });
+      });
+
+      const state = useMetricsStore.getState();
+      expect(state.filteredFindings.map((f) => f.id)).toEqual(["2"]);
+    });
   });
 });

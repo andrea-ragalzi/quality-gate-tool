@@ -1,4 +1,4 @@
-import { ModuleConfig } from "@/types/analysis";
+import { ModuleConfig } from "@/entities/analysis";
 
 export const DEFAULT_MODULES: ModuleConfig[] = [
   {

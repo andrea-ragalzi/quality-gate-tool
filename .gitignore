@@ -39,6 +39,8 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 .next/
+.next_build_verification/
+.next_temp/
 out/
 dist/
 .cache/

@@ -17,16 +17,16 @@
 .matrix-char {
   position: absolute;
   font-family: vars.$font-matrix;
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: bold;
   color: vars.$matrix-green;
-  @include mix.text-glow(vars.$matrix-green, 8px);
+  @include mix.text-glow(vars.$matrix-green, 0.5rem);
   opacity: 0;
   animation: matrix-fall linear infinite;
 
   &.bright {
     color: vars.$matrix-green-bright;
-    @include mix.text-glow(vars.$matrix-green-bright, 12px);
+    @include mix.text-glow(vars.$matrix-green-bright, 0.75rem);
   }
 
   &.dim {
@@ -37,7 +37,7 @@
 
 @keyframes matrix-fall {
   0% {
-    top: -50px;
+    top: -3.5rem;
     opacity: 0;
     transform: scaleY(0);
   }
@@ -62,7 +62,7 @@
       transparent 1px
     ),
     linear-gradient(90deg, rgba(vars.$matrix-green, 0.03) 1px, transparent 1px);
-  background-size: 20px 20px;
+  background-size: 1.25rem 1.25rem;
   animation: grid-move 20s linear infinite;
 }
 
@@ -71,7 +71,7 @@
     background-position: 0 0;
   }
   100% {
-    background-position: 20px 20px;
+    background-position: 1.25rem 1.25rem;
   }
 }
 
@@ -85,14 +85,14 @@
     content: ">";
     color: vars.$matrix-green;
     margin-right: vars.$spacing-sm;
-    @include mix.text-glow(vars.$matrix-green, 5px);
+    @include mix.text-glow(vars.$matrix-green, 0.25rem);
   }
 }
 
 @keyframes terminal-appear {
   from {
     opacity: 0;
-    transform: translateX(-10px);
+    transform: translateX(-0.75rem);
   }
   to {
     opacity: 1;
@@ -117,7 +117,7 @@
       rgba(vars.$matrix-green, 0.03) 4px
     );
     font-family: vars.$font-matrix;
-    font-size: 10px;
+    font-size: 0.75rem;
     color: rgba(vars.$matrix-green, 0.1);
     overflow: hidden;
     animation: binary-scroll 10s linear infinite;
@@ -130,7 +130,7 @@
     transform: translateY(0);
   }
   100% {
-    transform: translateY(100px);
+    transform: translateY(7rem);
   }
 }
 
@@ -175,7 +175,7 @@
   0% {
     opacity: 0;
     transform: scale(0.8);
-    filter: blur(10px);
+    filter: blur(0.75rem);
   }
   50% {
     opacity: 0.5;

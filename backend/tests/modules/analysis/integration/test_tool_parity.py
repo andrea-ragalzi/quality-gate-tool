@@ -49,6 +49,7 @@ def run_module_check(module_class, name, path, mock_notifier):
         )
     except FileNotFoundError as e:
         pytest.fail(f"Command not found: {e}")
+        raise  # Unreachable, but helps type checker understand control flow
 
     print(f"Exit Code: {result.returncode}")
     # print(f"Stdout Preview: {result.stdout[:200]}...")

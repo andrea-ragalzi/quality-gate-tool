@@ -311,7 +311,7 @@ class PyrightModule(AnalysisModule):
         import os
 
         os.environ["PYRIGHT_PYTHON_FORCE_VERSION"] = "latest"
-        cmd = ["python3", "-m", "pyright"]
+        cmd = ["python3", "-u", "-m", "pyright"]
 
         target_dir = "."
         # Agnostic check: if pyproject.toml is not in root, check immediate subdirectories
